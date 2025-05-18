@@ -2,7 +2,7 @@ import axios from "axios";
 
 // إنشاء axios instance مع الإعدادات المشتركة
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:5000/api/v1", // هنا بتحدد الـ URL الأساسي للـ API
+  baseURL: "https://duck-server.vercel.app/api/v1", // هنا بتحدد الـ URL الأساسي للـ API
   headers: {
     "Content-Type": "application/json", // تأكد من أن Content-Type هو JSON
     // ممكن تضيف أي Headers تانية هنا زي التوكن لو كنت بتستخدم Authorization
