@@ -3,9 +3,9 @@ import { useDispatch, useSelector } from "react-redux";
 import {  fetchGeneratedQuizzes } from "../redux/slices/quizSlice";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
-const correctSound = new Audio("../../sounds/correct.mp3");
-const wrongSound = new Audio("../../sounds/wrong.mp3");
-const vectorSound = new Audio("../../sounds/vectory.mp3");
+const correctSound = new Audio("/sounds/correct.mp3");
+const wrongSound = new Audio("/sounds/wrong.mp3");
+const vectorSound = new Audio("/sounds/vectory.mp3");
 correctSound.volume = 0.2;
 wrongSound.volume = 0.2;
 vectorSound.volume = 0.5;
