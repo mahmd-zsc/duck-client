@@ -1,52 +1,76 @@
 import React from "react";
-import { FaHome, FaBookOpen } from "react-icons/fa";
+import { Home, BookOpen } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import logoImage from "../../../images/download__2_-removebg-preview.png"; // Using proper import for images
+//import logoImage from "../../../images/deepstash-grow-with-app-768x576-removebg-preview.png";
+import logoImage from "../../../images/Lexi.png";
 
 const Sidebar = () => {
   const location = useLocation();
 
-  return (
-    <div className="w-80 h-screen bg-white  border-gray-200 border-l-1 text-right font-sans">
-      {/* Logo/Title */}
-      <h1 className="text-2xl font-bold text-gray-800 flex items-center justify-center my-10">
-        <img className=" h-40" src={logoImage} alt="" />
-      </h1>
+  const menuItems = [
+    {
+      path: "/",
+      label: "الصفحة الرئيسية",
+      icon: Home,
+    },
+    {
+      path: "/words",
+      label: "الكلمات",
+      icon: BookOpen,
+    },
+  ];
 
-      {/* Navigation Menu */}
-      <nav>
-        <ul className="">
-          <li>
-            <Link
-              to="/"
-              className={`flex items-center justify-end gap-4 text-xl py-6 pr-4 font-bold
-                ${
-                  location.pathname === "/"
-                    ? "   border-l-8 border-yellow-400  bg-gray-100"
-                    : "text-gray-700 "
-                }`}
-            >
-              <span>الصفحة الرئيسية</span>
-              <FaHome className="text-3xl" />
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/words"
-              className={`flex items-center justify-end gap-4 text-xl py-6 pr-4 font-bold
-                ${
-                  location.pathname === "/words"
-                    ? "border-l-8 border-yellow-400 bg-gray-100"
-                    : "text-gray-700 "
-                }`}
-            >
-              <span>الكلمات</span>
-              <FaBookOpen className="text-3xl" />
-            </Link>
-          </li>
-        </ul>
-      </nav>
-    </div>
+  return (
+    <>
+      {/* عنصر وهمي لحجز المساحة */}
+      <div className="w-80 flex-shrink-0" aria-hidden="true"></div>
+
+      {/* الـ Sidebar الفعلي مع position fixed */}
+      <div
+        className="fixed top-0 right-0 w-80 h-screen bg-white border-l border-gray-100 flex flex-col"
+        dir="rtl"
+      >
+        {/* Logo Section */}
+        <div className="relative flex items-center justify-center py-8 px-6">
+          <img className="h-42 w-auto" src={logoImage} alt="Logo" />
+          <div className="absolute w-full h-full"></div>
+        </div>
+
+        {/* Navigation Menu */}
+        <nav className="flex-1 px-4">
+          <ul className="space-y-2">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
+
+              return (
+                <li key={item.path}>
+                  <Link
+                    to={item.path}
+                    className={`
+                      flex items-center gap-4 px-6 py-4 rounded-2xl text-base font-normal transition-all duration-200
+                      ${
+                        isActive
+                          ? "bg-gray-900 text-white shadow-sm"
+                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      }
+                    `}
+                  >
+                    <Icon size={20} />
+                    <span>{item.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        {/* Bottom Section - Optional */}
+        <div className="p-4 border-t border-gray-100">
+          <div className="text-center text-xs text-gray-400">إصدار 1.0</div>
+        </div>
+      </div>
+    </>
   );
 };
 

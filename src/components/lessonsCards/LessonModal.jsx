@@ -1,20 +1,106 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { Info, X } from "lucide-react";
 
 function LessonModal({ lesson, onClose }) {
   const [groupSize, setGroupSize] = useState(5);
   const [selectedGroup, setSelectedGroup] = useState(1);
-
-  const totalGroups = Math.ceil(lesson.wordsNumber / groupSize);
   const navigate = useNavigate();
 
+  const totalGroups = Math.ceil(lesson.wordsNumber / groupSize);
+
+  // Generate random shapes and colors
+  const shapes = useMemo(() => {
+    const colors = [
+      "bg-blue-200",
+      "bg-green-200",
+      "bg-yellow-200",
+      "bg-pink-200",
+      "bg-purple-200",
+      "bg-indigo-200",
+      "bg-red-200",
+      "bg-orange-200",
+      "bg-teal-200",
+      "bg-cyan-200",
+    ];
+
+    const shapeTypes = ["circle", "square", "triangle"];
+
+    return Array.from(
+      { length: 15 + Math.floor(Math.random() * 5) },
+      (_, i) => ({
+        id: i,
+        type: shapeTypes[Math.floor(Math.random() * shapeTypes.length)],
+        color: colors[Math.floor(Math.random() * colors.length)],
+        size: 20 + Math.random() * 40,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        rotation: Math.random() * 360,
+        opacity: 0.08 + Math.random() * 0.15,
+      })
+    );
+  }, [lesson?.title]);
+
+  const renderShape = (shape) => {
+    const baseStyle = {
+      position: "absolute",
+      width: `${shape.size}px`,
+      height: `${shape.size}px`,
+      left: `${shape.x}%`,
+      top: `${shape.y}%`,
+      transform: `translate(-50%, -50%) rotate(${shape.rotation}deg)`,
+      opacity: shape.opacity,
+      zIndex: 0,
+    };
+
+    switch (shape.type) {
+      case "circle":
+        return (
+          <div
+            key={shape.id}
+            className={`${shape.color} rounded-full`}
+            style={baseStyle}
+          />
+        );
+      case "square":
+        return (
+          <div
+            key={shape.id}
+            className={`${shape.color} rounded-lg`}
+            style={baseStyle}
+          />
+        );
+      case "triangle":
+        return (
+          <div
+            key={shape.id}
+            className={`${shape.color}`}
+            style={{
+              ...baseStyle,
+              clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
+            }}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  // Lock page scroll when modal is open
   useEffect(() => {
     document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "auto";
-    };
+    return () => (document.body.style.overflow = "auto");
   }, []);
+
+  // Handle escape key
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [onClose]);
 
   const handleOverlayClick = (e) => {
     if (e.target.classList.contains("overlay")) {
@@ -22,102 +108,141 @@ function LessonModal({ lesson, onClose }) {
     }
   };
 
-  const handleGoToLessonPage = () => {
-    navigate(`/lesson/${lesson._id}`);
-  };
-
-  const handleGenerateQuizzes = async () => {
-
-    navigate(
-      `/questions?lessonId=${lesson._id}&groupSize=${groupSize}&groupNumber=${selectedGroup}`
-    );
-  };
-
   return createPortal(
     <div
       onClick={handleOverlayClick}
-      className="overlay fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn"
-      style={{ backgroundColor: "rgba(255, 255, 255, 0.6)" }}
+      className="overlay fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
+      style={{ background: "rgba(0,0,0,0.4)" }}
+      dir="rtl"
     >
-      <div
-        className="p-8 w-[90%] max-w-xl animate-popIn border"
-        style={{
-          borderRadius: "34px",
-          background: "#fff",
-          boxShadow: "0 10px 20px rgba(0, 0, 0, 0.1)",
-        }}
-      >
-        {/* معلومات الدرس */}
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-semibold mb-2 text-gray-900">
-            {lesson.emoji} {lesson.title}
-          </h2>
-          <p className="text-sm capitalize text-gray-500 mb-2">
-            المستوى: {lesson.level}
-          </p>
-          <p className="text-md font-medium text-gray-700">
-            عدد الكلمات: {lesson.wordsNumber}
-          </p>
+      <div className="w-[95%] sm:w-[500px] lg:w-[600px] max-h-[95vh] overflow-y-auto bg-white rounded-3xl shadow-2xl relative">
+        {/* Background shapes */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
+          {shapes.map(renderShape)}
         </div>
 
-        {/* اختيار حجم المجموعة */}
-        <div className="mb-4">
-          <label className="font-semibold block mb-2 text-gray-600">
-            عدد الكلمات في كل مجموعة:
-          </label>
-          <select
-            className="border border-black bg-[#FDEACA] text-[#FC8716] rounded-full px-4 py-2 w-full transition duration-300  cursor-pointer"
-            value={groupSize}
-            onChange={(e) => {
-              setGroupSize(Number(e.target.value));
-              setSelectedGroup(1);
-            }}
+        {/* Modal content */}
+        <div className="relative z-10 p-6 sm:p-8">
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="absolute left-4 top-4 w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors"
           >
-            {[5, 10, 15].map((size) => (
-              <option key={size} value={size}>
-                {size} كلمة
-              </option>
-            ))}
-          </select>
-        </div>
+            <X size={16} className="text-gray-500" />
+          </button>
 
-        {/* اختيار المجموعة */}
-        <div className="mb-6">
-          <label className="font-semibold block mb-2 text-gray-600">
-            اختر مجموعة:
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {Array.from({ length: totalGroups }, (_, i) => (
-              <button
-                key={i}
-                onClick={() => setSelectedGroup(i + 1)}
-                className={`px-6 py-3 rounded-full border text-sm font-medium transition-all duration-300 ${
-                  selectedGroup === i + 1
-                    ? "bg-[#FC8716] text-white border-black scale-105"
-                    : "bg-[#FDEACA] text-[#FC8716] border-black"
-                } hover:scale-105`}
+          {/* Header with info icon and title */}
+          <div className="flex items-center justify-between mb-8">
+            <div className="w-6 h-6 rounded-full border border-gray-400 flex items-center justify-center">
+              <Info size={12} className="text-gray-500" />
+            </div>
+            <div className="text-center flex-1 mx-4">
+              <h2 className="text-lg font-medium text-gray-800 mb-1">
+                {lesson.emoji} {lesson.title}
+              </h2>
+              <p className="text-sm text-gray-500 capitalize">
+                المستوى: {lesson.level}
+              </p>
+            </div>
+            <div className="w-6"></div> {/* Spacer for alignment */}
+          </div>
+
+          {/* Main counter section */}
+          <div className="text-center mb-8">
+            <div className="mb-3">
+              <span className="text-5xl sm:text-6xl font-light text-gray-900">
+                {lesson.wordsNumber}
+              </span>
+            </div>
+            <div className="text-sm text-gray-500">كلمة في هذا الدرس</div>
+          </div>
+
+          {/* Progress bar */}
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-xs text-gray-500">تقدم المراجعة</span>
+              <span className="text-xs font-medium text-gray-800">
+                {lesson.reviewedPercentage || 0}%
+              </span>
+            </div>
+            <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gray-800 transition-all duration-700"
+                style={{ width: `${lesson.reviewedPercentage || 0}%` }}
+              ></div>
+            </div>
+          </div>
+
+          {/* Settings Section */}
+          <div className="space-y-6 mb-8">
+            {/* Group size selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                عدد الكلمات في كل مجموعة:
+              </label>
+              <select
+                value={groupSize}
+                onChange={(e) => {
+                  setGroupSize(+e.target.value);
+                  setSelectedGroup(1);
+                }}
+                className="w-full p-3 border border-gray-300 bg-white text-gray-700 rounded-2xl text-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 cursor-pointer"
               >
-                المجموعة {i + 1}
-              </button>
-            ))}
+                {[5, 10, 15, 20].map((size) => (
+                  <option key={size} value={size}>
+                    {size} كلمة
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Group selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                اختر المجموعة ({totalGroups} مجموعة متاحة):
+              </label>
+              <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                {Array.from({ length: totalGroups }).map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setSelectedGroup(i + 1)}
+                    className={`px-4 py-2 rounded-2xl border text-sm font-medium transition-colors ${
+                      selectedGroup === i + 1
+                        ? "bg-gray-800 text-white border-gray-800"
+                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    المجموعة {i + 1}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={() => {
+                navigate(`/lesson/${lesson._id}`);
+                onClose();
+              }}
+              className="flex-1 bg-white border border-gray-300 rounded-2xl py-4 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
+            >
+              تفاصيل الدرس
+            </button>
+            <button
+              onClick={() => {
+                navigate(
+                  `/questions?lessonId=${lesson._id}&groupSize=${groupSize}&groupNumber=${selectedGroup}&mode=learn`
+                );
+                onClose();
+              }}
+              className="flex-1 bg-gray-800 text-white rounded-2xl py-4 text-sm font-medium hover:bg-gray-700 transition-colors shadow-sm"
+            >
+              بدء المراجعة
+            </button>
           </div>
         </div>
-
-        {/* زر الذهاب لصفحة الدرس */}
-        <button
-          onClick={handleGoToLessonPage}
-          className="w-full py-4 rounded-full border border-black hover:scale-105 duration-300 bg-[#FDEACA] text-[#FC8716] cursor-pointer mb-2"
-        >
-          الذهاب لتفاصيل الدرس
-        </button>
-
-        {/* زر البدء في الحل */}
-        <button
-          onClick={handleGenerateQuizzes}
-          className="w-full py-4 rounded-full border border-black hover:scale-105 duration-300 bg-[#FDEACA] text-[#FC8716] cursor-pointer"
-        >
-          البدء في الحل
-        </button>
       </div>
     </div>,
     document.body

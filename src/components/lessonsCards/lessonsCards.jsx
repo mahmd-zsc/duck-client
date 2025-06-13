@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
 import LessonCard from "./lessonCard";
 import LessonModal from "./LessonModal";
-import img from "../../../images/download__3_-removebg-preview.png";
+import img from "../../../images/deepstash-transfer-knowledge2-1024x960-removebg-preview.png";
+
 import { MdOutlineAddCircleOutline } from "react-icons/md";
+import { CiCirclePlus } from "react-icons/ci";
+
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getLessons } from "../../redux/slices/lessonSlice";
@@ -10,41 +13,39 @@ import { getLessons } from "../../redux/slices/lessonSlice";
 function LessonsCards() {
   const [selectedLesson, setSelectedLesson] = useState(null);
   const dispatch = useDispatch();
-
   const { lessons, loading, error } = useSelector((state) => state.lesson);
 
   useEffect(() => {
     dispatch(getLessons());
   }, [dispatch]);
 
-  const handleCardClick = (lesson) => {
-    setSelectedLesson(lesson);
-  };
-
-  const handleCloseModal = () => {
-    setSelectedLesson(null);
-  };
-
   return (
-    <div className="px-4 sm:px-8">
-      {/* Header دايمًا ظاهر */}
-      <div className="  mt-20 flex justify-between items-center flex-row-reverse">
-        <div className="relative flex gap-1 items-center flex-row-reverse">
-          <img className="h-60" src={img} alt="صورة مكعب روبيك" />
-          <h1 className="text-5xl  font-semibold">الدروس</h1>
-          <div className=" absolute w-full h-full"></div>
+    <div className="px-3 sm:px-6 md:px-8 lg:px-12 xl:px-20">
+      {/* ---------- Header ---------- */}
+      <header className="mt-6 flex flex-col md:flex-row-reverse items-center md:justify-between gap-6">
+        <div className="relative flex flex-row-reverse items-center  gap-2">
+          <img
+            src={img}
+            alt="صورة مكعب روبيك"
+            className="h-36 sm:h-44 md:h-52 lg:h-60 2xl:h-72 select-none"
+          />
+          <h1 className=" font-light  leading-tight text-2xl sm:text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl ">
+            الدروس
+          </h1>
+          <div className=" absolute left-0 top-0 w-full h-full"></div>
         </div>
 
-        <Link to="/add-lesson">
-          <button className=" px-8 py-2 bg-[#FDEACA] rounded-full border hover:scale-105 duration-300 cursor-pointer flex items-center justify-center shadow-lg ">
-            <MdOutlineAddCircleOutline color="#FC8716" size={30} />
+        <Link to="/add-lesson" aria-label="إضافة درس">
+          <button className=" flex items-center justify-center rounded-3xl border border-gray-300 bg-white shadow-sm transition-transform duration-300 hover:scale-105 px-6 sm:px-7 md:px-8 py-3">
+            {/* <MdOutlineAddCircleOutline className="text-gray-600 " size={24}  /> */}
+            <CiCirclePlus className="text-gray-600 " size={24}  />
           </button>
         </Link>
-      </div>
+      </header>
 
-      {/* الحالات اللي تحت الـ Header */}
+      {/* ---------- Content States ---------- */}
       {loading ? (
-        <div className="flex justify-center items-center h-40 text-white text-xl">
+        <div className="flex justify-center items-center h-40 text-xl animate-pulse">
           ⏳ جاري تحميل الدروس...
         </div>
       ) : error ? (
@@ -53,27 +54,28 @@ function LessonsCards() {
         </div>
       ) : (
         <>
-          {/* Cards Grid */}
-          <div
-            
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-8 py-10"
-          >
-            {lessons.map((lesson, index) => (
-              <div
-                key={index}
-                className="w-full max-w-[350px] mx-auto bg-white shadow-lg rounded-2xl overflow-hidden transform transition-transform duration-300 hover:scale-105"
+          {/* ---------- Cards Grid ---------- */}
+          <section className="py-10 grid gap-5 sm:gap-6 md:gap-8 lg:gap-10 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 2xl:grid-cols-3">
+            {lessons.map((lesson) => (
+              <article
+                key={lesson._id}
+                className="w-full max-w-[360px] mx-auto bg-white shadow-lg rounded-2xl overflow-hidden transition-transform duration-300 hover:scale-105"
               >
                 <LessonCard
                   {...lesson}
-                  onClick={() => handleCardClick(lesson)}
+                  onClick={() => setSelectedLesson(lesson)}
                 />
-              </div>
+              </article>
             ))}
-          </div>
+          </section>
 
-          {/* Modal */}
+          {/* ---------- Modal ---------- */}
           {selectedLesson && (
-            <LessonModal lesson={selectedLesson} onClose={handleCloseModal} />
+            <LessonModal
+              lesson={selectedLesson}
+              onClose={() => setSelectedLesson(null)}
+              className="max-w-[90vw] sm:max-w-[600px] lg:max-w-[800px]"
+            />
           )}
         </>
       )}

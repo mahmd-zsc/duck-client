@@ -1,39 +1,144 @@
-// lessonCard.jsx
-import React, { useState } from "react";
-import img1 from "../../../images/download-removebg-preview (1).png";
-import img3 from "../../../images/download-removebg-preview.png";
-import img4 from "../../../images/download__1_-removebg-preview.png";
-import img5 from "../../../images/download__2_-removebg-preview (1).png";
-import img7 from "../../../images/download__3_-removebg-preview (1).png";
-import img8 from "../../../images/download__5_-removebg-preview.png";
+import { useState, useMemo } from "react";
+import { Info } from "lucide-react";
 
-function LessonCard({ title, level, wordsNumber, emoji, onClick }) {
-  const funImages = [img1, img3, img4, img5, img7, img8];
-  const [randomImage] = useState(
-    funImages[Math.floor(Math.random() * funImages.length)]
-  );
+function LessonCard({ title, level, wordsNumber, onClick }) {
+  // Generate random shapes and colors
+  const shapes = useMemo(() => {
+    const colors = [
+      "bg-blue-200",
+      "bg-green-200",
+      "bg-yellow-200",
+      "bg-pink-200",
+      "bg-purple-200",
+      "bg-indigo-200",
+      "bg-red-200",
+      "bg-orange-200",
+      "bg-teal-200",
+      "bg-cyan-200",
+    ];
+
+    const shapeTypes = ["circle", "square", "triangle"];
+
+    return Array.from(
+      { length: 3 + Math.floor(Math.random() * 3) },
+      (_, i) => ({
+        id: i,
+        type: shapeTypes[Math.floor(Math.random() * shapeTypes.length)],
+        color: colors[Math.floor(Math.random() * colors.length)],
+        size: 20 + Math.random() * 40,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        rotation: Math.random() * 360,
+        opacity: 0.3 + Math.random() * 0.4,
+      })
+    );
+  }, [title]); // Use title as dependency to ensure consistency per card
+
+  const renderShape = (shape) => {
+    const baseStyle = {
+      position: "absolute",
+      width: `${shape.size}px`,
+      height: `${shape.size}px`,
+      left: `${shape.x}%`,
+      top: `${shape.y}%`,
+      transform: `translate(-50%, -50%) rotate(${shape.rotation}deg)`,
+      opacity: shape.opacity,
+    };
+
+    switch (shape.type) {
+      case "circle":
+        return (
+          <div
+            key={shape.id}
+            className={`${shape.color} rounded-full`}
+            style={baseStyle}
+          />
+        );
+      case "square":
+        return (
+          <div
+            key={shape.id}
+            className={`${shape.color} rounded-lg`}
+            style={baseStyle}
+          />
+        );
+      case "triangle":
+        return (
+          <div
+            key={shape.id}
+            className={`${shape.color}`}
+            style={{
+              ...baseStyle,
+              clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
+            }}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div
+    <button
       onClick={onClick}
-      className="relative rounded-xl p-4 w-full h-[140px] flex flex-col justify-between hover:scale-105 transition-transform duration-300 cursor-pointer bg-white shadow-lg hover:shadow-xl"
+      className="relative w-full h-[150px] sm:h-[160px] md:h-[180px] lg:h-[190px] overflow-hidden rounded-3xl p-6 text-start bg-white shadow-sm   hover:shadow-md transition-all duration-300 "
+      dir="rtl"
     >
-      {/* الكلام كلها هنا نعملها relative و z-index عالي */}
-      <div className="relative z-20">
-        <div className="text-xl font-bold bg-[#FFBB00] w-fit px-1 rounded-full border">
-          {wordsNumber}
-        </div>
-        <div className="text-sm opacity-80 capitalize">{level}</div>
-        <div className="text-base font-semibold">{title}</div>
-        <div className="flex items-center gap-2 mt-2 text-lg">
-          <span>{emoji}</span>
-        </div>
-      </div>
+      {/* Background Shapes */}
+      <div className="absolute inset-0 z-10">{shapes.map(renderShape)}</div>
 
-      {/* الصورة تبقى تحت الكلام بز-index أقل */}
-      <div className="funimge absolute right-0 top-0 opacity-70 z-10">
-        <img className="h-40" src={randomImage} alt="Fun decoration" />
+      {/* Content Layer */}
+      <div className="relative z-20 flex flex-col justify-between h-full">
+        {/* Header with info icon */}
+        <div className="flex items-center justify-between">
+          <div className="w-4 h-4 rounded-full border border-gray-400 flex items-center justify-center bg-white/80 backdrop-blur-sm">
+            <Info size={8} className="text-gray-500" />
+          </div>
+          <span className="text-xs font-normal text-gray-700 uppercase bg-white/80 backdrop-blur-sm px-2 py-1 rounded-full">
+            {level}
+          </span>
+        </div>
+
+        {/* Main content */}
+        <div className="flex-1 flex items-center justify-between">
+          {/* Title */}
+          <div className="flex-1">
+            <h3 className="text-sm sm:text-base font-normal text-gray-800 leading-tight bg-white/80 backdrop-blur-sm px-2 py-1 rounded-lg inline-block">
+              {title}
+            </h3>
+          </div>
+
+          {/* Words count display */}
+          <div className="text-right bg-white/80 backdrop-blur-sm px-3 py-2 rounded-xl">
+            <div className="text-2xl sm:text-3xl font-light text-gray-900">
+              {wordsNumber}
+            </div>
+            <div className="text-xs text-gray-500 mt-1">كلمة</div>
+          </div>
+        </div>
+
+        {/* Action indicator */}
+        <div className="flex justify-end">
+          <div className="w-6 h-6 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center">
+            <svg
+              width="10"
+              height="10"
+              viewBox="0 0 24 24"
+              fill="none"
+              className="text-gray-600"
+            >
+              <path
+                d="M9 18L15 12L9 6"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+        </div>
       </div>
-    </div>
+    </button>
   );
 }
 

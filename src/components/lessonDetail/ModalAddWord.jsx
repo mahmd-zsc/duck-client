@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { addWordApi } from "../../redux/apiCalls/wordApi";
 import { createPortal } from "react-dom";
+import { X, Plus, FileText } from "lucide-react";
 
 function ModalAddWord({ showModal, setShowModal, lessonId }) {
   const [jsonInput, setJsonInput] = useState(""); // حقل لتخزين JSON المدخل
@@ -34,49 +35,80 @@ function ModalAddWord({ showModal, setShowModal, lessonId }) {
   return createPortal(
     <div
       onClick={handleOverlayClick}
-      className="overlay fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn"
-      style={{ backgroundColor: "rgba(255, 255, 255, 0.6)" }}
+      className="overlay fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn   bg-opacity-20"
+      dir="rtl"
     >
-      <div
-        className="p-8 w-[90%] max-w-xl animate-popIn border"
-        style={{
-          borderRadius: "34px",
-          background: "#fff",
-          boxShadow: "0 10px 20px rgba(0, 0, 0, 0.1)",
-        }}
-      >
-        <h3 className="text-2xl font-semibold mb-4 text-center text-gray-800">
-          Add Multiple Words 📚
-        </h3>
-
-        <div className="mb-4">
-          <label className="block font-semibold text-gray-600 mb-2">
-            Enter Words (JSON format)
-          </label>
-          <textarea
-            value={jsonInput}
-            onChange={(e) => setJsonInput(e.target.value)}
-            rows="8"
-            className="w-full p-3 border border-gray-300 rounded-xl"
-            placeholder='مثال: [{"word": "Haus", "meaning": "منزل", "pronunciation": "هاوس", ...}]'
-          />
-        </div>
-
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-
-        <div className="flex flex-col sm:flex-row gap-3">
+      <div className="bg-white rounded-3xl shadow-xl w-[90%] max-w-2xl mx-4 animate-popIn overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <button
             onClick={() => setShowModal(false)}
-            className="w-full py-3 rounded-full border border-black hover:scale-105 duration-300 bg-gray-200 text-gray-800 cursor-pointer"
+            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
           >
-            Cancel
+            <X size={16} className="text-gray-600" />
           </button>
-          <button
-            onClick={handleAddWords}
-            className="w-full py-3 rounded-full border border-black hover:scale-105 duration-300 bg-[#FC8716] text-white cursor-pointer"
-          >
-            Add Words
-          </button>
+          <div className="flex items-center gap-2">
+            <FileText size={20} className="text-gray-600" />
+            <h3 className="text-lg font-medium text-gray-800">
+              إضافة كلمات متعددة
+            </h3>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6">
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              أدخل الكلمات (بصيغة JSON)
+            </label>
+            <div className="relative">
+              <textarea
+                value={jsonInput}
+                onChange={(e) => setJsonInput(e.target.value)}
+                rows="10"
+                className="w-full p-4 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none text-sm font-mono"
+                placeholder={`مثال:
+[
+  {
+    "word": "Haus",
+    "meaning": "منزل",
+    "pronunciation": "هاوس"
+  },
+  {
+    "word": "Buch",
+    "meaning": "كتاب",
+    "pronunciation": "بوخ"
+  }
+]`}
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              تأكد من صحة تنسيق JSON قبل الإضافة
+            </p>
+          </div>
+
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl">
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
+
+          {/* Buttons */}
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowModal(false)}
+              className="flex-1 bg-white border border-gray-300 rounded-2xl py-3 text-gray-700 text-sm font-normal hover:bg-gray-50 transition-colors shadow-sm"
+            >
+              إلغاء
+            </button>
+            <button
+              onClick={handleAddWords}
+              className="flex-1 bg-gray-900 text-white rounded-2xl py-3 text-sm font-normal hover:bg-gray-800 transition-colors shadow-sm flex items-center justify-center gap-2"
+            >
+              <Plus size={16} />
+              إضافة الكلمات
+            </button>
+          </div>
         </div>
       </div>
     </div>,

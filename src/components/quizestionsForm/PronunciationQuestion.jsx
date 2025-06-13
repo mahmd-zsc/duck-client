@@ -8,6 +8,14 @@ function PronunciationQuestion({
 }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [shuffledOptions, setShuffledOptions] = useState([]);
+  const [synth, setSynth] = useState(null);
+
+  useEffect(() => {
+    // Initialize speech synthesis
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      setSynth(window.speechSynthesis);
+    }
+  }, []);
 
   const shuffleArray = (array) => {
     let arr = [...array];
@@ -39,18 +47,21 @@ function PronunciationQuestion({
   };
 
   const playPronunciation = () => {
-    if (!window.speechSynthesis) {
-      alert("جهازك مش بيدعم تشغيل الصوت");
-      return;
-    }
+
+    // Cancel any ongoing speech
+    synth.cancel();
 
     const utterance = new SpeechSynthesisUtterance(question.answer);
     utterance.lang = "de-DE";
+    utterance.rate = 0.9; // سرعة النطق
 
     utterance.onstart = () => setIsPlaying(true);
     utterance.onend = () => setIsPlaying(false);
+    utterance.onerror = () => {
+      setIsPlaying(false);
+    };
 
-    window.speechSynthesis.speak(utterance);
+    synth.speak(utterance);
   };
 
   return (
@@ -62,7 +73,7 @@ function PronunciationQuestion({
         disabled={isPlaying}
         className="mb-4 px-5 py-3 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-blue-300 transition"
       >
-        {isPlaying ? "بيشتغل الصوت..." : "اسمع النطق 🔊"}
+        {isPlaying ? "جاري التشغيل..." : "اسمع النطق 🔊"}
       </button>
 
       <div className="flex flex-col gap-3 mt-4 w-full max-w-md">
@@ -89,7 +100,7 @@ function PronunciationQuestion({
           return (
             <label
               key={idx}
-              className={`px-10 py-3 border-2 border-b-4 rounded cursor-pointer flex items-center justify-between  ${optionClass}`}
+              className={`px-10 py-3 border-2 border-b-4 rounded cursor-pointer flex items-center justify-between ${optionClass}`}
             >
               <div className="flex items-center gap-5">
                 <div
@@ -105,7 +116,7 @@ function PronunciationQuestion({
                   checked={userAnswer === option.word}
                   onChange={() => handleOptionChange(option.word)}
                   className="mr-2 appearance-none"
-                  disabled={nextQuiz} // عشان متتغيرش بعد لما تظهر الإجابة
+                  disabled={nextQuiz}
                 />
 
                 <div className="flex flex-col">

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import GermanSpecialCharsButtons from "./GermanSpecialCharsButtons";
 
-
 function WriteSentenceQuestion({
   question,
   userAnswer,
@@ -42,6 +41,17 @@ function WriteSentenceQuestion({
     }
   }, [nextQuiz, voices, question.answer]);
 
+  /*--- set the feedback message after grading ---*/
+  useEffect(() => {
+    if (nextQuiz) {
+      const correct = question.answer?.trim().toLowerCase();
+      const user = userAnswer?.trim().toLowerCase();
+      if (user !== correct) {
+        setMessage(`${question.answer} : الإجابة الصحيحة`);
+      }
+    }
+  }, [nextQuiz, question.answer, userAnswer, setMessage]);
+
   /*--- handlers ---*/
   const handleChange = (e) => {
     if (!nextQuiz) setUserAnswer(e.target.value);
@@ -62,7 +72,7 @@ function WriteSentenceQuestion({
       inputClass += "bg-lime-200 border-green-500 text-green-700";
     } else {
       inputClass += "bg-red-200 border-red-500 text-red-700";
-      setMessage(`${question.answer} : الإجابة الصحيحة`);
+      // ❌ شلنا setMessage من هنا
     }
   } else {
     if (userAnswer) inputClass += "bg-blue-200 border-blue-500 text-blue-700";
@@ -77,7 +87,6 @@ function WriteSentenceQuestion({
       <div className="flex flex-col gap-3 mt-4 w-full px-20 lg:px-60">
         {/* textarea بدل input عشان الجملة أطول */}
         <input
-          cl
           dir="ltr"
           type="text"
           value={userAnswer}

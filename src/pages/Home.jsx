@@ -1,6 +1,12 @@
+import { useEffect } from "react";
+import HardWordsCount from "../components/HardWordsCount";
 import LessonsCards from "../components/lessonsCards/lessonsCards";
+import ReviewWordsOverview from "../components/ReviewWordsOverview";
 
 export default function Home() {
+  useEffect(() => {
+    document.title = "Lexi - الصفحة الرئيسية"; // غيّر الاسم اللي إنت عايزه
+  }, []);
   return (
     <div
       style={{
@@ -10,6 +16,10 @@ export default function Home() {
       }}
       className=" container pt-10 px-20"
     >
+      <div className=" flex items-center justify-between gap-3">
+        <ReviewWordsOverview />
+        <HardWordsCount />
+      </div>
       <LessonsCards />
     </div>
   );

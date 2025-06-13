@@ -2,6 +2,7 @@ import React from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { deleteLesson } from "../../redux/slices/lessonSlice";
+import { Trash2 } from "lucide-react";
 
 const DeleteLessonButton = ({ lessonId }) => {
   const dispatch = useDispatch();
@@ -22,9 +23,10 @@ const DeleteLessonButton = ({ lessonId }) => {
   return (
     <button
       onClick={handleDelete}
-      className="px-6 py-3 bg-red-400 text-black border rounded-full font-semibold text-lg  transition-all duration-300 hover:scale-105 cursor-pointer shadow-md"
+      className="flex-1 bg-white border border-red-300 rounded-2xl py-4 text-red-600 text-sm font-normal hover:bg-red-50 transition-colors shadow-sm flex items-center justify-center gap-2"
     >
-      Delete Lesson
+      <Trash2 size={16} />
+      حذف الدرس
     </button>
   );
 };

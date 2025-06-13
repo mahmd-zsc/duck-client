@@ -75,14 +75,14 @@ function WriteWordQuestion({
       <h2 className="text-xl font-bold">{question?.question}</h2>
       <div className="flex flex-col gap-3 mt-4 w-full px-60">
         <input
-        cl
-        dir="ltr"
+          dir="ltr"
           type="text"
           value={userAnswer}
           onChange={handleChange}
           placeholder="اكتب الكلمة هنا ✍️"
           className={inputClass}
         />
+
         <GermanSpecialCharsButtons onInsertChar={handleInsertChar} />
       </div>
     </div>

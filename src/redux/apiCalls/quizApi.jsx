@@ -4,11 +4,21 @@ export const generateQuizzesApi = async ({
   lessonId,
   groupSize,
   groupNumber,
+  mode,
 }) => {
   try {
-    const response = await axiosInstance.get(
-      `/quizzes?lessonId=${lessonId}&groupSize=${groupSize}&groupNumber=${groupNumber}`
-    );
+    let response;
+
+    if (lessonId) {
+      response = await axiosInstance.get(
+        `/quizzes?lessonId=${lessonId}&groupSize=${groupSize}&groupNumber=${groupNumber}&mode=${mode}`
+      );
+    } else {
+      response = await axiosInstance.get(
+        `/quizzes?groupSize=${groupSize}&groupNumber=${groupNumber}&mode=${mode}`
+      );
+    }
+
     return response.data;
   } catch (error) {
     throw new Error(

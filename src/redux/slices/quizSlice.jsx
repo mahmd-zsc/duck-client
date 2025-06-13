@@ -4,7 +4,7 @@ import { generateQuizzesApi } from "../apiCalls/quizApi"; // تأكد إن ال�
 
 const initialState = {
   quizzes: [],
-  loading: false,
+  loading: true,
   error: null,
 };
 
@@ -35,7 +35,7 @@ const quizSlice = createSlice({
 
 // 👉 Thunk Function جوا نفس الملف
 export const fetchGeneratedQuizzes =
-  ({ lessonId, groupSize, groupNumber }) =>
+  ({ lessonId, groupSize, groupNumber, mode }) =>
   async (dispatch) => {
     dispatch(setLoading());
     try {
@@ -43,6 +43,7 @@ export const fetchGeneratedQuizzes =
         lessonId,
         groupSize,
         groupNumber,
+        mode,
       });
       dispatch(setQuizzes(data));
     } catch (error) {

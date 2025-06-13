@@ -1,20 +1,18 @@
 import { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {  fetchGeneratedQuizzes } from "../redux/slices/quizSlice";
+import { fetchGeneratedQuizzes } from "../redux/slices/quizSlice";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 const correctSound = new Audio("/sounds/correct.mp3");
 const wrongSound = new Audio("/sounds/wrong.mp3");
-const vectorSound = new Audio("/sounds/vectory.mp3");
+
 correctSound.volume = 0.2;
 wrongSound.volume = 0.2;
-vectorSound.volume = 0.5;
-// Components
+
 import QuizFooter from "../components/quizestionsForm/QuizFooter";
 import QuizHeader from "../components/quizestionsForm/QuizHeader";
 import QuizProgressBar from "../components/quizestionsForm/QuizProgressBar";
 
-// Questions Types
 import PluralQuestion from "../components/quizestionsForm/pluralQuestion";
 import WriteWordQuestion from "../components/quizestionsForm/WriteWordQuestion";
 import ArticleQuestion from "../components/quizestionsForm/ArticleQuestion";
@@ -25,10 +23,13 @@ import SentenceOrderQuestion from "../components/quizestionsForm/SentenceOrderQu
 import TranslationQuestion from "../components/quizestionsForm/translationQuestion";
 import Loading from "../components/quizestionsForm/Loading";
 import WriteSentenceQuestion from "../components/quizestionsForm/WriteSentenceQuestion";
+import IntroQuestion from "../components/quizestionsForm/IntroQuestion";
+import QuizComplete from "../components/quizestionsForm/QuizComplete";
+import FillInTheBlanksQuestion from "../components/quizestionsForm/FillInTheBlanksQuestion";
+import FillintheblanksIntro from "../components/quizestionsForm/FillintheblanksIntro";
 
 export default function Questions() {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { id: lessonId } = useParams();
 
@@ -40,64 +41,111 @@ export default function Questions() {
   const [nextQuiz, setNextQuiz] = useState(false);
   const [message, setMessage] = useState("");
   const { quizzes, loading } = useSelector((state) => state.quiz);
+  let quizzesList = quizzes.quizzes;
+  const [wrongAttemptsMap, setWrongAttemptsMap] = useState({});
+  const [hardWordsSet, setHardWordsSet] = useState(new Set());
+  const [hardCandidates, setHardCandidates] = useState([]);
 
   const handleCheckAnswer = () => {
     handleAnswer(userAnswer);
   };
 
   useEffect(() => {
-    const groupSize = searchParams.get("groupSize");
-    const lessonId = searchParams.get("lessonId");
-    const groupNumber = searchParams.get("groupNumber");
-    if (lessonId && groupSize && groupNumber) {
-      dispatch(fetchGeneratedQuizzes({ lessonId, groupSize, groupNumber }));
-    }
-  }, [dispatch, lessonId, searchParams]);
+    document.title = "Lexi - اسئلة"; // غيّر الاسم اللي إنت عايزه
+  }, []);
 
   useEffect(() => {
-    if (quizzes.length > 0) {
-      setQuestionsQueue(quizzes);
-      setCurrentQuestion(quizzes[0]);
+    const fetchData = async () => {
+      const groupSize = searchParams.get("groupSize");
+      const lessonId = searchParams.get("lessonId");
+      const groupNumber = searchParams.get("groupNumber");
+      const mode = searchParams.get("mode");
+      console.log(mode);
+
+      await dispatch(
+        fetchGeneratedQuizzes({ lessonId, groupSize, groupNumber, mode })
+      );
+    };
+
+    fetchData();
+  }, [dispatch, searchParams]);
+
+  useEffect(() => {
+    if (quizzesList?.length > 0) {
+      setQuestionsQueue(quizzesList);
+      setCurrentQuestion(quizzesList[0]);
     }
-    console.log(quizzes);
   }, [quizzes]);
 
-  const normalize = (str) =>
-    str
+  const normalize = (str) => {
+    if (typeof str !== "string") {
+      // لو الإدخال مش سترينج، حاول تحويله إلى سترينج أو رجع فارغ
+      if (str == null) return "";
+      return String(str)
+        .trim()
+        .toLowerCase()
+        .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()؟،]/g, "")
+        .replace(/\s{2,}/g, " ");
+    }
+    return str
       .trim()
       .toLowerCase()
-      .replace(/[.,!?;:]$/, "")
-      .replace(/^\./, "")
-      .replace(/\s+/g, " ");
+      .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()؟،]/g, "")
+      .replace(/\s{2,}/g, " ");
+  };
 
   const handleAnswer = (userAnswerInput) => {
+    //console.log(currentQuestion.type);
     if (!currentQuestion) return;
-
     let normalizedAnswer = "";
-
-    if (Array.isArray(userAnswerInput)) {
-      normalizedAnswer = normalize(userAnswerInput.join(" "));
-    } else if (typeof userAnswerInput === "string") {
-      normalizedAnswer = normalize(userAnswerInput);
-    }
-
     let correctAnswerText = "";
-
-    if (currentQuestion.type === "writeword") {
-      correctAnswerText = normalize(currentQuestion.correctAnswer || "");
-    } else if (currentQuestion.type === "sentenceorder") {
-      correctAnswerText = normalize(
-        (currentQuestion.correctAnswer || []).join(" ")
-      );
+    let isCorrect = false;
+    if (currentQuestion.type === "fillintheblanksintro") {
+      setNextQuiz(true);
+      isCorrect = true;
+      setCorrectAnswer(isCorrect);
+      setNextQuiz(true);
     } else {
-      correctAnswerText = normalize(currentQuestion.answer || "");
+      const normalizeInput = (input) => {
+        if (Array.isArray(input)) {
+          return normalize(input.join(" "));
+        }
+        if (typeof input === "string") {
+          return normalize(input);
+        }
+        if (typeof input === "object" && input !== null) {
+          return normalize(Object.values(input).join(" "));
+        }
+        return "";
+      };
+
+      if (currentQuestion.type === "fillInTheBlanks") {
+        const userEntries = Object.values(userAnswerInput || {}).map(normalize);
+        const correctEntries = Object.values(currentQuestion.answer || {}).map(
+          normalize
+        );
+        isCorrect =
+          userEntries.length === correctEntries.length &&
+          userEntries.every((val, i) => val === correctEntries[i]);
+        setUserAnswer(userAnswerInput);
+      } else {
+        normalizedAnswer = normalizeInput(userAnswerInput);
+
+        if (currentQuestion.type === "writeword") {
+          correctAnswerText = normalize(currentQuestion.correctAnswer || "");
+        } else if (currentQuestion.type === "sentenceorder") {
+          correctAnswerText = normalizeInput(currentQuestion.correctAnswer);
+        } else {
+          correctAnswerText = normalize(currentQuestion.answer || "");
+        }
+
+        isCorrect = normalizedAnswer === correctAnswerText;
+        setUserAnswer(userAnswerInput);
+      }
+
+      setCorrectAnswer(isCorrect);
+      setNextQuiz(true);
     }
-
-    const isCorrect = normalizedAnswer === correctAnswerText;
-
-    setUserAnswer(userAnswerInput);
-    setCorrectAnswer(isCorrect);
-    setNextQuiz(true);
 
     if (isCorrect) {
       correctSound.play();
@@ -114,20 +162,50 @@ export default function Questions() {
       setMessage(randomMessage);
     } else {
       wrongSound.play();
+      let wordId = currentQuestion._id;
+      setWrongAttemptsMap((prev) => {
+        const currentAttempts = prev[wordId] || 0;
+        const newAttempts = currentAttempts + 1;
+
+        // لو المحاولات وصلت 2 والكلمة مش hard قبل كده
+        if (newAttempts === 2 && !hardWordsSet.has(wordId)) {
+          setHardCandidates((prevArray) => [...prevArray, wordId]);
+        }
+
+        return { ...prev, [wordId]: newAttempts };
+      });
     }
   };
 
   const handleNextQuiz = () => {
     const updatedQueue = [...questionsQueue];
     const current = updatedQueue.shift();
-
-    if (!correctAnswer) updatedQueue.push(current);
+    if (!correctAnswer) {
+      if (current.type === "fillInTheBlanks") {
+        const introQuestion = {
+          ...current,
+          type: "fillintheblanksintro",
+          isReviewed: true,
+        };
+        console.log(introQuestion);
+        updatedQueue.unshift(introQuestion);
+        updatedQueue.push(current);
+      } else {
+        const introQuestion = {
+          ...current,
+          type: "intro",
+          isReviewed: true,
+        };
+        updatedQueue.unshift(introQuestion);
+        updatedQueue.push(current);
+      }
+    }
 
     setQuestionsQueue(updatedQueue);
     setCurrentQuestion(updatedQueue[0] || null);
 
     const progress =
-      ((quizzes.length - updatedQueue.length) / quizzes.length) * 100;
+      ((quizzesList.length - updatedQueue.length) / quizzesList.length) * 100;
     setProgressPercentage(progress);
 
     setUserAnswer("");
@@ -136,7 +214,6 @@ export default function Questions() {
     setMessage("");
   };
 
-  // ✅ هنا بقى بنديف اختصار Enter
   const handleEnter = useCallback(
     (e) => {
       if (e.key === "Enter") {
@@ -156,125 +233,51 @@ export default function Questions() {
     return () => window.removeEventListener("keydown", handleEnter);
   }, [handleEnter]);
 
+  const baseProps = {
+    question: currentQuestion,
+    userAnswer,
+    setUserAnswer,
+    nextQuiz,
+    correctAnswer,
+    setMessage,
+  };
   const renderQuestion = () => {
-    if (!currentQuestion) {
-      vectorSound.play();
-      // لما الأسئلة تخلص، عرض رسالة وزر الرجوع للصفحة الرئيسية
+    if (!loading && !currentQuestion) {
       return (
-        <div className="text-center mt-20">
-          <p className="text-2xl mb-6">تم الانتهاء من كل الأسئلة 🎉</p>
-          <button
-            onClick={() => navigate("/")}
-            className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-          >
-            ارجع للصفحة الرئيسية
-          </button>
-        </div>
+        <QuizComplete
+          quizzesList={quizzesList}
+          hardCandidates={hardCandidates}
+          mode={quizzes.mode}
+        />
       );
     }
 
     const type = currentQuestion.type?.toLowerCase();
-
     switch (type) {
+      case "intro":
+        return <IntroQuestion {...baseProps} />;
+      case "fillintheblanksintro":
+        return <FillintheblanksIntro {...baseProps} />;
       case "writeword":
-        return (
-          <WriteWordQuestion
-            question={currentQuestion}
-            userAnswer={userAnswer}
-            setUserAnswer={setUserAnswer}
-            nextQuiz={nextQuiz}
-            correctAnswer={correctAnswer}
-            setMessage={setMessage}
-          />
-        );
+        return <WriteWordQuestion {...baseProps} />;
       case "article":
-        return (
-          <ArticleQuestion
-            question={currentQuestion}
-            userAnswer={userAnswer}
-            setUserAnswer={setUserAnswer}
-            nextQuiz={nextQuiz}
-            correctAnswer={correctAnswer}
-            setMessage={setMessage}
-          />
-        );
+        return <ArticleQuestion {...baseProps} />;
       case "plural":
-        return (
-          <PluralQuestion
-            question={currentQuestion}
-            userAnswer={userAnswer}
-            setUserAnswer={setUserAnswer}
-            nextQuiz={nextQuiz}
-            correctAnswer={correctAnswer}
-            setMessage={setMessage}
-          />
-        );
+        return <PluralQuestion {...baseProps} />;
       case "pronunciation":
-        return (
-          <PronunciationQuestion
-            question={currentQuestion}
-            userAnswer={userAnswer}
-            setUserAnswer={setUserAnswer}
-            nextQuiz={nextQuiz}
-            correctAnswer={correctAnswer}
-            setMessage={setMessage}
-          />
-        );
+        return <PronunciationQuestion {...baseProps} />;
       case "antonym":
-        return (
-          <AntonymQuestion
-            question={currentQuestion}
-            userAnswer={userAnswer}
-            setUserAnswer={setUserAnswer}
-            nextQuiz={nextQuiz}
-            correctAnswer={correctAnswer}
-            setMessage={setMessage}
-          />
-        );
+        return <AntonymQuestion {...baseProps} />;
       case "synonym":
-        return (
-          <SynonymQuestion
-            question={currentQuestion}
-            userAnswer={userAnswer}
-            setUserAnswer={setUserAnswer}
-            nextQuiz={nextQuiz}
-            correctAnswer={correctAnswer}
-            setMessage={setMessage}
-          />
-        );
+        return <SynonymQuestion {...baseProps} />;
       case "sentenceorder":
-        return (
-          <SentenceOrderQuestion
-            question={currentQuestion}
-            userAnswer={userAnswer}
-            setUserAnswer={setUserAnswer}
-            nextQuiz={nextQuiz}
-            correctAnswer={correctAnswer}
-            setMessage={setMessage}
-          />
-        );
+        return <SentenceOrderQuestion {...baseProps} />;
       case "translation":
-        return (
-          <TranslationQuestion
-            question={currentQuestion}
-            userAnswer={userAnswer}
-            setUserAnswer={setUserAnswer}
-            nextQuiz={nextQuiz}
-            correctAnswer={correctAnswer}
-            setMessage={setMessage}
-          />
-        );
+        return <TranslationQuestion {...baseProps} />;
+      case "fillintheblanks":
+        return <FillInTheBlanksQuestion {...baseProps} />;
       case "writesentence":
-        return (
-          <WriteSentenceQuestion
-            question={currentQuestion}
-            userAnswer={userAnswer}
-            setUserAnswer={setUserAnswer}
-            nextQuiz={nextQuiz}
-            setMessage={setMessage}
-          />
-        );
-
+        return <WriteSentenceQuestion {...baseProps} />;
       default:
         return <p className="text-red-500">نوع السؤال غير مدعوم 😅</p>;
     }
@@ -282,24 +285,27 @@ export default function Questions() {
 
   return (
     <div dir="rtl" className="flex flex-col min-h-screen">
-      <QuizHeader title="German - الحديث عن أين تعيش" />
+      <QuizHeader title={quizzes.titleOfLesson} />
 
-      <div className="flex-1 mx-32">
+      <div className="flex-1 flex flex-col mx-32">
         <div className="mx-32">
           <QuizProgressBar percentage={progressPercentage} />
         </div>
 
-        <div className="mt-10">{loading ? <Loading /> : renderQuestion()}</div>
+        <div className="mt-5 flex-1">
+          {loading ? <Loading /> : renderQuestion()}
+        </div>
       </div>
 
       {currentQuestion && !loading && (
         <QuizFooter
+          message={message}
+          nextQuiz={nextQuiz}
+          onCheckAnswer={handleCheckAnswer}
+          onNextQuiz={handleNextQuiz}
           userAnswer={userAnswer}
           correctAnswer={correctAnswer}
-          nextQuiz={nextQuiz}
-          onCheck={handleCheckAnswer}
-          onNext={handleNextQuiz}
-          message={message}
+          currentQuestion={currentQuestion}
         />
       )}
     </div>
