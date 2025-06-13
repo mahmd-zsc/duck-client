@@ -1,7 +1,7 @@
 import { useEffect } from "react";
-import HardWordsCount from "../components/HardWordsCount";
+import HardWordsCount from "../components/hardWordsCount";
 import LessonsCards from "../components/lessonsCards/lessonsCards";
-import ReviewWordsOverview from "../components/ReviewWordsOverview";
+import ReviewWordsOverview from "../components/reviewWordsOverview";
 
 export default function Home() {
   useEffect(() => {
