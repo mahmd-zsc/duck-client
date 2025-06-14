@@ -157,21 +157,7 @@ function LessonModal({ lesson, onClose }) {
             <div className="text-sm text-gray-500">كلمة في هذا الدرس</div>
           </div>
 
-          {/* Progress bar */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-xs text-gray-500">تقدم المراجعة</span>
-              <span className="text-xs font-medium text-gray-800">
-                {lesson.reviewedPercentage || 0}%
-              </span>
-            </div>
-            <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-              <div
-                className="h-full rounded-full bg-gray-800 transition-all duration-700"
-                style={{ width: `${lesson.reviewedPercentage || 0}%` }}
-              ></div>
-            </div>
-          </div>
+        
 
           {/* Settings Section */}
           <div className="space-y-6 mb-8">
