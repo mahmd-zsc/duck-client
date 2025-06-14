@@ -6,13 +6,13 @@ import axiosInstance from "../../utils/axiosInstance";
 const victorySound = new Audio("/sounds/victory.mp3");
 victorySound.volume = 0.2;
 
-export default function QuizComplete({ quizzes, hardCandidates, mode }) {
+export default function QuizComplete({ quizzesList, hardCandidates, mode }) {
   const navigate = useNavigate();
 
   function handlerClick() {
     navigate("/");
 
-    const wordIds = quizzes.map((q) => q._id).filter(Boolean);
+    const wordIds = quizzesList.map((q) => q._id).filter(Boolean);
     const hardWordIds = [...new Set(hardCandidates?.filter(Boolean))];
 
     if (wordIds.length === 0) return;
