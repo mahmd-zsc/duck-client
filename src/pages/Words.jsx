@@ -1,14 +1,22 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux"; // ✅ إضافة Redux hooks
 import axiosInstance from "../utils/axiosInstance";
-import { Info } from "lucide-react";
+import { Info, X, Eye, AlertTriangle } from "lucide-react";
+import { getAllWordsApi } from "../redux/apiCalls/wordApi";
+import { setWordIds, clearWordIds } from "../redux/slices/wordSlice"; // ✅ استيراد الـ actions
+import { useNavigate } from "react-router-dom"; // ✅ استيراد useNavigate
 
 const Words = () => {
   const [words, setWords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedWords, setSelectedWords] = useState(new Set());
+  const navigate = useNavigate(); // ✅ إنشائه
 
+  // ✅ إضافة Redux hooks
+  const dispatch = useDispatch();
   useEffect(() => {
-    document.title = "Lexi - قائمة الكلمات"; // غيّر الاسم اللي إنت عايزه
+    document.title = "Lexi - قائمة الكلمات";
   }, []);
 
   // Generate random shapes and colors (same as LessonDetail)
@@ -91,11 +99,11 @@ const Words = () => {
   useEffect(() => {
     const fetchWords = async () => {
       try {
-        const res = await axiosInstance.get("/words");
-        const sorted = res.data.sort((a, b) => a.word.localeCompare(b.word));
-        setWords(sorted);
+        const res = await getAllWordsApi(); // 🟢 استخدم الدالة من ملف api
+        // const sorted = res.sort((a, b) => a.word.localeCompare(b.word));
+        setWords(res);
       } catch (err) {
-        setError(err.response?.data?.message || "حدث خطأ أثناء تحميل الكلمات");
+        setError(err.message || "حدث خطأ أثناء تحميل الكلمات");
       } finally {
         setLoading(false);
       }
@@ -103,6 +111,55 @@ const Words = () => {
 
     fetchWords();
   }, []);
+
+  // Handle word selection
+  const handleWordClick = (wordId) => {
+    setSelectedWords((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(wordId)) {
+        newSet.delete(wordId);
+      } else {
+        newSet.add(wordId);
+      }
+      return newSet;
+    });
+  };
+
+  // Handle cancel selection
+  const handleCancel = () => {
+    setSelectedWords(new Set());
+  };
+
+  // ✅ تحديث دالة handleReview لإضافة wordIds إلى الـ store
+  const handleReview = async () => {
+    try {
+      const selectedWordIds = Array.from(selectedWords);
+      dispatch(setWordIds(selectedWordIds));
+
+      setWords((prevWords) =>
+        prevWords.map((word) =>
+          selectedWords.has(word._id)
+            ? { ...word, isReviewed: !word.isReviewed }
+            : word
+        )
+      );
+
+      setSelectedWords(new Set());
+
+      // ✅ التوجيه إلى صفحة الأسئلة
+      navigate("/questions?mode=review");
+
+      console.log("تم حفظ الكلمات المختارة في الـ store:", selectedWordIds);
+    } catch (err) {
+      console.error("Error updating review status:", err);
+    }
+  };
+
+  // ✅ دالة لمسح wordIds من الـ store (اختيارية)
+  const handleClearStore = () => {
+    dispatch(clearWordIds());
+    console.log("تم مسح wordIds من الـ store");
+  };
 
   if (loading) {
     return (
@@ -122,11 +179,12 @@ const Words = () => {
 
   // Calculate statistics
   const reviewedWords = words.filter((word) => word.isReviewed).length;
+  const hardWords = words.filter((word) => word.isHard).length;
   const reviewedPercentage =
     words.length > 0 ? Math.round((reviewedWords / words.length) * 100) : 0;
 
   return (
-    <div className="flex flex-1 h-full p-4" dir="rtl">
+    <div className=" relative flex flex-1 h-full p-4" dir="rtl">
       <div className="flex-1 flex flex-col w-full p-8 py-10 relative overflow-hidden">
         {/* Background shapes */}
         <div className="absolute inset-0 pointer-events-none">
@@ -141,6 +199,26 @@ const Words = () => {
           <h1 className="text-base font-normal text-gray-800">قائمة الكلمات</h1>
         </div>
 
+        {/* Action buttons - show when words are selected */}
+        {selectedWords.size > 0 && (
+          <div className="absolute top-10 left-1/2 -translate-x-1/2  flex justify-center gap-4 mb-6  z-40">
+            <button
+              onClick={handleCancel}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 transition-colors"
+            >
+              <X size={16} />
+              إلغاء ({selectedWords.size})
+            </button>
+            <button
+              onClick={handleReview}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-white transition-colors"
+            >
+              <Eye size={16} />
+              مراجعة
+            </button>
+          </div>
+        )}
+
         <div className="flex flex-1 flex-col relative z-10">
           {/* Statistics section */}
           <div className="mb-8">
@@ -153,6 +231,11 @@ const Words = () => {
               </div>
               <div className="text-sm text-gray-500">
                 <div>كلمة في المجموع</div>
+                {hardWords > 0 && (
+                  <div className="mt-1 text-orange-600 font-medium">
+                    {hardWords} كلمة صعبة
+                  </div>
+                )}
               </div>
             </div>
 
@@ -179,21 +262,63 @@ const Words = () => {
               {words.map((wordObj) => (
                 <div
                   key={wordObj._id}
-                  className={`border rounded-xl p-3 text-center transition-colors ${
-                    wordObj.isReviewed
+                  onClick={() => handleWordClick(wordObj._id)}
+                  className={`border rounded-xl p-3 text-center transition-all cursor-pointer select-none relative ${
+                    selectedWords.has(wordObj._id)
+                      ? "bg-blue-500 border-blue-600 text-white shadow-lg transform scale-105"
+                      : wordObj.isHard
+                      ? wordObj.isReviewed
+                        ? "bg-orange-50 border-orange-300 hover:bg-orange-100"
+                        : "bg-red-50 border-red-300 hover:bg-red-100"
+                      : wordObj.isReviewed
                       ? "bg-blue-50 border-blue-200 hover:bg-blue-100"
                       : "bg-gray-50 border-gray-200 hover:bg-gray-100"
                   }`}
                 >
+                  {/* Hard word indicator */}
+                  {wordObj.isHard && (
+                    <div className="absolute -top-1 -right-1">
+                      <div
+                        className={`w-4 h-4 rounded-full flex items-center justify-center ${
+                          selectedWords.has(wordObj._id)
+                            ? "bg-white text-orange-500"
+                            : wordObj.isReviewed
+                            ? "bg-orange-500 text-white"
+                            : "bg-red-500 text-white"
+                        }`}
+                      >
+                        <AlertTriangle size={10} />
+                      </div>
+                    </div>
+                  )}
+
                   <div
                     className={`text-sm font-medium mb-1 ${
-                      wordObj.isReviewed ? "text-blue-800" : "text-gray-800"
+                      selectedWords.has(wordObj._id)
+                        ? "text-white"
+                        : wordObj.isHard
+                        ? wordObj.isReviewed
+                          ? "text-orange-800"
+                          : "text-red-800"
+                        : wordObj.isReviewed
+                        ? "text-blue-800"
+                        : "text-gray-800"
                     }`}
                   >
                     {wordObj.word}
                   </div>
                   {wordObj.translation && (
-                    <div className="text-xs text-gray-500">
+                    <div
+                      className={`text-xs ${
+                        selectedWords.has(wordObj._id)
+                          ? "text-blue-100"
+                          : wordObj.isHard
+                          ? wordObj.isReviewed
+                            ? "text-orange-600"
+                            : "text-red-600"
+                          : "text-gray-500"
+                      }`}
+                    >
                       {wordObj.translation}
                     </div>
                   )}

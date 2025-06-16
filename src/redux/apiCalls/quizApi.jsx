@@ -5,19 +5,24 @@ export const generateQuizzesApi = async ({
   groupSize,
   groupNumber,
   mode,
+  wordIds = [],
 }) => {
   try {
-    let response;
+    const queryParams = new URLSearchParams();
 
-    if (lessonId) {
-      response = await axiosInstance.get(
-        `/quizzes?lessonId=${lessonId}&groupSize=${groupSize}&groupNumber=${groupNumber}&mode=${mode}`
-      );
-    } else {
-      response = await axiosInstance.get(
-        `/quizzes?groupSize=${groupSize}&groupNumber=${groupNumber}&mode=${mode}`
-      );
+    if (lessonId) queryParams.append("lessonId", lessonId);
+    if (groupSize) queryParams.append("groupSize", groupSize);
+    if (groupNumber) queryParams.append("groupNumber", groupNumber);
+    if (mode) queryParams.append("mode", mode);
+
+    // ✅ إضافة wordIds لو موجودة
+    if (wordIds.length > 0) {
+      queryParams.append("wordIds", wordIds.join(","));
     }
+
+    const response = await axiosInstance.get(
+      `/quizzes?${queryParams.toString()}`
+    );
 
     return response.data;
   } catch (error) {

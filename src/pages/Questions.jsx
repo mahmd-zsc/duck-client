@@ -41,6 +41,7 @@ export default function Questions() {
   const [nextQuiz, setNextQuiz] = useState(false);
   const [message, setMessage] = useState("");
   const { quizzes, loading } = useSelector((state) => state.quiz);
+  const { wordIds } = useSelector((state) => state.word);
   let quizzesList = quizzes.quizzes;
   const [wrongAttemptsMap, setWrongAttemptsMap] = useState({});
   const [hardWordsSet, setHardWordsSet] = useState(new Set());
@@ -60,15 +61,20 @@ export default function Questions() {
       const lessonId = searchParams.get("lessonId");
       const groupNumber = searchParams.get("groupNumber");
       const mode = searchParams.get("mode");
-      console.log(mode);
 
-      await dispatch(
-        fetchGeneratedQuizzes({ lessonId, groupSize, groupNumber, mode })
-      );
+      let payload = { groupSize, groupNumber, mode };
+
+      if (lessonId) {
+        payload.lessonId = lessonId;
+      } else if (wordIds?.length > 0) {
+        payload.wordIds = wordIds;
+      }
+
+      await dispatch(fetchGeneratedQuizzes(payload));
     };
 
     fetchData();
-  }, [dispatch, searchParams]);
+  }, [dispatch, searchParams, wordIds]);
 
   useEffect(() => {
     if (quizzesList?.length > 0) {

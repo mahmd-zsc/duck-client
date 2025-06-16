@@ -7,5 +7,6 @@ export const store = configureStore({
     lesson: lessonReducer, // استخدام الـ reducer هنا
     word: wordReducer,
     quiz: quizReducer,
+    
   },
 });
