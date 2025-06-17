@@ -14,9 +14,10 @@ function LessonsCards() {
   const [selectedLesson, setSelectedLesson] = useState(null);
   const dispatch = useDispatch();
   const { lessons, loading, error } = useSelector((state) => state.lesson);
-
   useEffect(() => {
-    dispatch(getLessons());
+    if (lessons.length < 1) {
+      dispatch(getLessons());
+    }
   }, [dispatch]);
 
   return (
@@ -38,7 +39,7 @@ function LessonsCards() {
         <Link to="/add-lesson" aria-label="إضافة درس">
           <button className=" flex items-center justify-center rounded-3xl border border-gray-300 bg-white shadow-sm transition-transform duration-300 hover:scale-105 px-6 sm:px-7 md:px-8 py-3">
             {/* <MdOutlineAddCircleOutline className="text-gray-600 " size={24}  /> */}
-            <CiCirclePlus className="text-gray-600 " size={24}  />
+            <CiCirclePlus className="text-gray-600 " size={24} />
           </button>
         </Link>
       </header>

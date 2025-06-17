@@ -1,9 +1,11 @@
-// slices/wordSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   words: [],
-  wordIds: [], // ✅ أضف دي
+  wordIds: [],
+  reviewCount: null,
+  hardWordsCount: null, // ✅ أضف دي
+  allWords: [],
 };
 
 const wordSlice = createSlice({
@@ -16,8 +18,6 @@ const wordSlice = createSlice({
     setWords: (state, action) => {
       state.words = action.payload;
     },
-
-    // ✅ إدارة wordIds
     setWordIds: (state, action) => {
       state.wordIds = action.payload;
     },
@@ -32,6 +32,15 @@ const wordSlice = createSlice({
     clearWordIds: (state) => {
       state.wordIds = [];
     },
+    setReviewCount: (state, action) => {
+      state.reviewCount = action.payload;
+    },
+    setHardWordsCount: (state, action) => {
+      state.hardWordsCount = action.payload;
+    },
+    setAllWords: (state, action) => {
+      state.allWords = action.payload;
+    },
   },
 });
 
@@ -42,6 +51,9 @@ export const {
   addWordId,
   removeWordId,
   clearWordIds,
+  setReviewCount,
+  setHardWordsCount,
+  setAllWords,
 } = wordSlice.actions;
 
 export default wordSlice.reducer;

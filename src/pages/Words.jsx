@@ -1,25 +1,42 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { useDispatch, useSelector } from "react-redux"; // ✅ إضافة Redux hooks
-import axiosInstance from "../utils/axiosInstance";
+import { useDispatch, useSelector } from "react-redux";
 import { Info, X, Eye, AlertTriangle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
 import { getAllWordsApi } from "../redux/apiCalls/wordApi";
-import { setWordIds, clearWordIds } from "../redux/slices/wordSlice"; // ✅ استيراد الـ actions
-import { useNavigate } from "react-router-dom"; // ✅ استيراد useNavigate
+import {
+  setWordIds,
+  clearWordIds,
+  setAllWords,
+} from "../redux/slices/wordSlice";
 
 const Words = () => {
-  const [words, setWords] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [selectedWords, setSelectedWords] = useState(new Set());
-  const navigate = useNavigate(); // ✅ إنشائه
-
-  // ✅ إضافة Redux hooks
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const words = useSelector((state) => state.word.allWords);
+  const [selectedWords, setSelectedWords] = useState(new Set());
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
     document.title = "Lexi - قائمة الكلمات";
-  }, []);
 
-  // Generate random shapes and colors (same as LessonDetail)
+    const fetchWords = async () => {
+      try {
+        const res = await getAllWordsApi();
+        dispatch(setAllWords(res)); // ✅ حسب شكل البيانات الراجعة
+      } catch (err) {
+        setError(err.message || "حدث خطأ أثناء تحميل الكلمات");
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (words.length < 1) {
+      fetchWords();
+    }
+  }, [dispatch]);
+
   const shapes = useMemo(() => {
     const colors = [
       "bg-blue-200",
@@ -33,7 +50,6 @@ const Words = () => {
       "bg-teal-200",
       "bg-cyan-200",
     ];
-
     const shapeTypes = ["circle", "square", "triangle"];
 
     return Array.from(
@@ -96,66 +112,25 @@ const Words = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchWords = async () => {
-      try {
-        const res = await getAllWordsApi(); // 🟢 استخدم الدالة من ملف api
-        // const sorted = res.sort((a, b) => a.word.localeCompare(b.word));
-        setWords(res);
-      } catch (err) {
-        setError(err.message || "حدث خطأ أثناء تحميل الكلمات");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchWords();
-  }, []);
-
-  // Handle word selection
   const handleWordClick = (wordId) => {
     setSelectedWords((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(wordId)) {
-        newSet.delete(wordId);
-      } else {
-        newSet.add(wordId);
-      }
+      newSet.has(wordId) ? newSet.delete(wordId) : newSet.add(wordId);
       return newSet;
     });
   };
 
-  // Handle cancel selection
   const handleCancel = () => {
     setSelectedWords(new Set());
   };
 
-  // ✅ تحديث دالة handleReview لإضافة wordIds إلى الـ store
-  const handleReview = async () => {
-    try {
-      const selectedWordIds = Array.from(selectedWords);
-      dispatch(setWordIds(selectedWordIds));
-
-      setWords((prevWords) =>
-        prevWords.map((word) =>
-          selectedWords.has(word._id)
-            ? { ...word, isReviewed: !word.isReviewed }
-            : word
-        )
-      );
-
-      setSelectedWords(new Set());
-
-      // ✅ التوجيه إلى صفحة الأسئلة
-      navigate("/questions?mode=review");
-
-      console.log("تم حفظ الكلمات المختارة في الـ store:", selectedWordIds);
-    } catch (err) {
-      console.error("Error updating review status:", err);
-    }
+  const handleReview = () => {
+    const selectedWordIds = Array.from(selectedWords);
+    dispatch(setWordIds(selectedWordIds));
+    setSelectedWords(new Set());
+    navigate("/questions?mode=review");
   };
 
-  // ✅ دالة لمسح wordIds من الـ store (اختيارية)
   const handleClearStore = () => {
     dispatch(clearWordIds());
     console.log("تم مسح wordIds من الـ store");
@@ -177,21 +152,18 @@ const Words = () => {
     );
   }
 
-  // Calculate statistics
   const reviewedWords = words.filter((word) => word.isReviewed).length;
   const hardWords = words.filter((word) => word.isHard).length;
   const reviewedPercentage =
     words.length > 0 ? Math.round((reviewedWords / words.length) * 100) : 0;
 
   return (
-    <div className=" relative flex flex-1 h-full p-4" dir="rtl">
+    <div className="relative flex flex-1 h-full p-4" dir="rtl">
       <div className="flex-1 flex flex-col w-full p-8 py-10 relative overflow-hidden">
-        {/* Background shapes */}
         <div className="absolute inset-0 pointer-events-none">
           {shapes.map(renderShape)}
         </div>
 
-        {/* Header with info icon and title */}
         <div className="flex items-center justify-between mb-6 relative z-10">
           <div className="w-6 h-6 rounded-full border border-gray-400 flex items-center justify-center">
             <Info size={12} className="text-gray-500" />
@@ -199,30 +171,25 @@ const Words = () => {
           <h1 className="text-base font-normal text-gray-800">قائمة الكلمات</h1>
         </div>
 
-        {/* Action buttons - show when words are selected */}
         {selectedWords.size > 0 && (
-          <div className="absolute top-10 left-1/2 -translate-x-1/2  flex justify-center gap-4 mb-6  z-40">
+          <div className="absolute top-10 left-1/2 -translate-x-1/2 flex justify-center gap-4 mb-6 z-40">
             <button
               onClick={handleCancel}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700"
             >
-              <X size={16} />
-              إلغاء ({selectedWords.size})
+              <X size={16} /> إلغاء ({selectedWords.size})
             </button>
             <button
               onClick={handleReview}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-white transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-white"
             >
-              <Eye size={16} />
-              مراجعة
+              <Eye size={16} /> مراجعة
             </button>
           </div>
         )}
 
         <div className="flex flex-1 flex-col relative z-10">
-          {/* Statistics section */}
           <div className="mb-8">
-            {/* Word count display */}
             <div className="text-center mb-6">
               <div className="mb-3">
                 <span className="text-6xl font-light text-gray-900">
@@ -239,7 +206,6 @@ const Words = () => {
               </div>
             </div>
 
-            {/* Progress bar */}
             <div className="mb-6">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-xs text-gray-500">الكلمات المراجعة</span>
@@ -256,7 +222,6 @@ const Words = () => {
             </div>
           </div>
 
-          {/* Words grid */}
           <div className="flex-1 mb-8">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
               {words.map((wordObj) => (
@@ -275,7 +240,6 @@ const Words = () => {
                       : "bg-gray-50 border-gray-200 hover:bg-gray-100"
                   }`}
                 >
-                  {/* Hard word indicator */}
                   {wordObj.isHard && (
                     <div className="absolute -top-1 -right-1">
                       <div

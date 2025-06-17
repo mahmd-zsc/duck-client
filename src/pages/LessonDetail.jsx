@@ -12,6 +12,7 @@ function LessonDetail() {
   const dispatch = useDispatch();
   const navigate = useNavigate(); // ✅ إضافة useNavigate
   const [showModal, setShowModal] = useState(false);
+  const [words, setWords] = useState([]);
   const [progressPercent, setProgressPercent] = useState(0);
   const [selectedWords, setSelectedWords] = useState(new Set()); // ✅ إضافة state للكلمات المختارة
 
@@ -129,10 +130,19 @@ function LessonDetail() {
   };
 
   // ✅ Handle review functionality
+  // ✅ تحديث دالة handleReview لإضافة wordIds إلى الـ store
   const handleReview = async () => {
     try {
       const selectedWordIds = Array.from(selectedWords);
       dispatch(setWordIds(selectedWordIds));
+
+      setWords((prevWords) =>
+        prevWords.map((word) =>
+          selectedWords.has(word._id)
+            ? { ...word, isReviewed: !word.isReviewed }
+            : word
+        )
+      );
 
       setSelectedWords(new Set());
 
