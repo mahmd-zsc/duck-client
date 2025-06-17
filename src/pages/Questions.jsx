@@ -46,7 +46,6 @@ export default function Questions() {
   const [wrongAttemptsMap, setWrongAttemptsMap] = useState({});
   const [hardWordsSet, setHardWordsSet] = useState(new Set());
   const [hardCandidates, setHardCandidates] = useState([]);
-
   const handleCheckAnswer = () => {
     handleAnswer(userAnswer);
   };
@@ -62,13 +61,17 @@ export default function Questions() {
       const groupNumber = searchParams.get("groupNumber");
       const mode = searchParams.get("mode");
 
+      // ✅ استنى لحد ما wordIds تكون جاهزة في حالة مفيش lessonId
+      if (!lessonId && (!wordIds || wordIds.length === 0)) return;
+
       let payload = { groupSize, groupNumber, mode };
 
       if (lessonId) {
         payload.lessonId = lessonId;
-      } else if (wordIds?.length > 0) {
-        payload.wordIds = wordIds;
+        console.log("✔ with lessonId");
       }
+      payload.wordIds = wordIds;
+      console.log("😭 payload : ", payload);
 
       await dispatch(fetchGeneratedQuizzes(payload));
     };

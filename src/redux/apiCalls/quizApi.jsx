@@ -1,27 +1,17 @@
 import axiosInstance from "../../utils/axiosInstance";
 
-export const generateQuizzesApi = async ({
-  lessonId,
-  groupSize,
-  groupNumber,
-  mode,
-  wordIds = [],
-}) => {
+export const generateQuizzesApi = async (payload) => {
   try {
     const queryParams = new URLSearchParams();
-
-    if (lessonId) queryParams.append("lessonId", lessonId);
-    if (groupSize) queryParams.append("groupSize", groupSize);
-    if (groupNumber) queryParams.append("groupNumber", groupNumber);
-    if (mode) queryParams.append("mode", mode);
-
-    // ✅ إضافة wordIds لو موجودة
-    if (wordIds.length > 0) {
-      queryParams.append("wordIds", wordIds.join(","));
-    }
-
-    const response = await axiosInstance.get(
-      `/quizzes?${queryParams.toString()}`
+    if (payload.lessonId) queryParams.append("lessonId", payload.lessonId);
+    if (payload.groupSize) queryParams.append("groupSize", payload.groupSize);
+    if (payload.groupNumber)
+      queryParams.append("groupNumber", payload.groupNumber);
+    if (payload.mode) queryParams.append("mode", payload.mode);
+    console.log(payload);
+    const response = await axiosInstance.post(
+      `/quizzes?${queryParams.toString()}`,
+      { wordIds: payload.wordIds } // ✅ body
     );
 
     return response.data;

@@ -34,22 +34,15 @@ const quizSlice = createSlice({
 });
 
 // 👉 Thunk Function جوا نفس الملف
-export const fetchGeneratedQuizzes =
-  ({ lessonId, groupSize, groupNumber, mode }) =>
-  async (dispatch) => {
-    dispatch(setLoading());
-    try {
-      const data = await generateQuizzesApi({
-        lessonId,
-        groupSize,
-        groupNumber,
-        mode,
-      });
-      dispatch(setQuizzes(data));
-    } catch (error) {
-      dispatch(setError(error.message));
-    }
-  };
+export const fetchGeneratedQuizzes = (payload) => async (dispatch) => {
+  dispatch(setLoading());
+  try {
+    const data = await generateQuizzesApi(payload);
+    dispatch(setQuizzes(data));
+  } catch (error) {
+    dispatch(setError(error.message));
+  }
+};
 
 export const { setQuizzes, clearQuizzes, setLoading, setError } =
   quizSlice.actions;
