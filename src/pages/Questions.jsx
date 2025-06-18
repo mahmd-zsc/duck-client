@@ -49,7 +49,6 @@ export default function Questions() {
   const handleCheckAnswer = () => {
     handleAnswer(userAnswer);
   };
-
   useEffect(() => {
     document.title = "Lexi - اسئلة"; // غيّر الاسم اللي إنت عايزه
   }, []);
@@ -62,7 +61,7 @@ export default function Questions() {
       const mode = searchParams.get("mode");
 
       // ✅ استنى لحد ما wordIds تكون جاهزة في حالة مفيش lessonId
-      if (!lessonId && (!wordIds || wordIds.length === 0)) return;
+      if (!lessonId && (!wordIds || wordIds.length === 0) && !mode) return;
 
       let payload = { groupSize, groupNumber, mode };
 
@@ -71,8 +70,7 @@ export default function Questions() {
         console.log("✔ with lessonId");
       }
       payload.wordIds = wordIds;
-      console.log("😭 payload : ", payload);
-
+      await console.log("😭 payload : ", payload);
       await dispatch(fetchGeneratedQuizzes(payload));
     };
 
