@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import GermanSpecialCharsButtons from "./GermanSpecialCharsButtons";
+import { FaVolumeUp } from "react-icons/fa"; // ✅ أيقونة السماعة
 
 function WriteWordQuestion({
   question,
@@ -10,7 +11,6 @@ function WriteWordQuestion({
 }) {
   const [voices, setVoices] = useState([]);
 
-  // نحمل قائمة الأصوات المتاحة أول ما المكون يركب
   useEffect(() => {
     const synth = window.speechSynthesis;
 
@@ -21,27 +21,15 @@ function WriteWordQuestion({
       }
     };
 
-    // بعض المتصفحات بيحتاج event قبل ما يشتغل
     synth.addEventListener("voiceschanged", loadVoices);
     loadVoices();
 
     return () => synth.removeEventListener("voiceschanged", loadVoices);
   }, []);
 
-  // لما nextQuiz يبقى true نشغل الصوت
   useEffect(() => {
     if (nextQuiz && voices.length) {
-      // نختار أول صوت ألماني متاح
-      const germanVoices = voices.filter((v) =>
-        v.lang.toLowerCase().includes("de")
-      );
-      const voice = germanVoices[0] || voices[0];
-
-      const utterance = new SpeechSynthesisUtterance(question.answer);
-      utterance.voice = voice;
-      utterance.lang = voice.lang;
-      utterance.rate = 0.9; // ممكن تعدل السرعة لو حابب
-      window.speechSynthesis.speak(utterance);
+      speakAnswer();
     }
   }, [nextQuiz, voices, question.answer]);
 
@@ -51,6 +39,22 @@ function WriteWordQuestion({
 
   const handleInsertChar = (char) => {
     if (!nextQuiz) setUserAnswer(userAnswer + char);
+  };
+
+  const speakAnswer = () => {
+    if (!voices.length) return;
+
+    const germanVoices = voices.filter((v) =>
+      v.lang.toLowerCase().includes("de")
+    );
+    const voice = germanVoices[0] || voices[0];
+
+    const utterance = new SpeechSynthesisUtterance(question.answer);
+    utterance.voice = voice;
+    utterance.lang = voice.lang;
+    utterance.rate = 0.9;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
   };
 
   let inputClass =
@@ -73,15 +77,27 @@ function WriteWordQuestion({
   return (
     <div className="flex flex-col items-center gap-4 w-full">
       <h2 className="text-xl font-bold">{question?.question}</h2>
+
       <div className="flex flex-col gap-3 mt-4 w-full px-60">
-        <input
-          dir="ltr"
-          type="text"
-          value={userAnswer}
-          onChange={handleChange}
-          placeholder="اكتب الكلمة هنا ✍️"
-          className={inputClass}
-        />
+        <div className="flex items-center gap-3">
+          <input
+            dir="ltr"
+            type="text"
+            value={userAnswer}
+            onChange={handleChange}
+            placeholder="اكتب الكلمة هنا ✍️"
+            className={inputClass}
+          />
+
+          {/* زرار الصوت اليدوي */}
+          <button
+            onClick={speakAnswer}
+            className="p-3 bg-indigo-100 rounded-full hover:bg-indigo-200 transition-colors"
+            title="اسمع الكلمة"
+          >
+            <FaVolumeUp className="text-indigo-600 text-xl" />
+          </button>
+        </div>
 
         <GermanSpecialCharsButtons onInsertChar={handleInsertChar} />
       </div>
