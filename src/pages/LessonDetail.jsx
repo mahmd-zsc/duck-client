@@ -3,159 +3,64 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import ModalAddWord from "../components/lessonDetail/ModalAddWord";
 import { getLessonById } from "../redux/slices/lessonSlice";
-import { setWordIds, clearWordIds } from "../redux/slices/wordSlice"; // ✅ استيراد الـ actions
+import { setWordIds, clearWordIds } from "../redux/slices/wordSlice";
 import DeleteLessonButton from "../components/lessonDetail/DeleteLessonButton";
-import { Info, Plus, Trash2, X, Eye, AlertTriangle } from "lucide-react";
+import { Info, Plus, Trash2, X, Eye, AlertTriangle, Zap, BookOpen } from "lucide-react";
+import { generateShapes, renderShape } from "../utils/backgroundShapes";
 
 function LessonDetail() {
   const { id } = useParams();
   const dispatch = useDispatch();
-  const navigate = useNavigate(); // ✅ إضافة useNavigate
+  const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
-  const [words, setWords] = useState([]);
-  const [progressPercent, setProgressPercent] = useState(0);
-  const [selectedWords, setSelectedWords] = useState(new Set()); // ✅ إضافة state للكلمات المختارة
+  const [selectedWords, setSelectedWords] = useState(new Set());
 
   useEffect(() => {
     document.title = "Lexi - تفاصيل الدرس";
-  }, []);
+    dispatch(getLessonById(id));
+  }, [id, dispatch]);
 
   const { selectedLesson, loading, error } = useSelector(
     (state) => state.lesson
   );
 
-  // Generate random shapes and colors
   const shapes = useMemo(() => {
-    const colors = [
-      "bg-blue-200",
-      "bg-green-200",
-      "bg-yellow-200",
-      "bg-pink-200",
-      "bg-purple-200",
-      "bg-indigo-200",
-      "bg-red-200",
-      "bg-orange-200",
-      "bg-teal-200",
-      "bg-cyan-200",
-    ];
+    return generateShapes(40);
+  }, []);
 
-    const shapeTypes = ["circle", "square", "triangle"];
-
-    return Array.from(
-      { length: 10 + Math.floor(Math.random() * 5) },
-      (_, i) => ({
-        id: i,
-        type: shapeTypes[Math.floor(Math.random() * shapeTypes.length)],
-        color: colors[Math.floor(Math.random() * colors.length)],
-        size: 30 + Math.random() * 60,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        rotation: Math.random() * 360,
-        opacity: 0.1 + Math.random() * 0.2,
-      })
-    );
-  }, [selectedLesson?.title]);
-
-  const renderShape = (shape) => {
-    const baseStyle = {
-      position: "absolute",
-      width: `${shape.size}px`,
-      height: `${shape.size}px`,
-      left: `${shape.x}%`,
-      top: `${shape.y}%`,
-      transform: `translate(-50%, -50%) rotate(${shape.rotation}deg)`,
-      opacity: shape.opacity,
-      zIndex: 0,
-    };
-
-    switch (shape.type) {
-      case "circle":
-        return (
-          <div
-            key={shape.id}
-            className={`${shape.color} rounded-full`}
-            style={baseStyle}
-          />
-        );
-      case "square":
-        return (
-          <div
-            key={shape.id}
-            className={`${shape.color} rounded-lg`}
-            style={baseStyle}
-          />
-        );
-      case "triangle":
-        return (
-          <div
-            key={shape.id}
-            className={`${shape.color}`}
-            style={{
-              ...baseStyle,
-              clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
-            }}
-          />
-        );
-      default:
-        return null;
-    }
-  };
-
-  useEffect(() => {
-    dispatch(getLessonById(id));
-  }, [id, dispatch]);
-
-  useEffect(() => {
-    if (selectedLesson) {
-      setProgressPercent(selectedLesson.reviewedPercentage);
-    }
-  }, [selectedLesson]);
-
-  // ✅ Handle word selection
   const handleWordClick = (wordId) => {
     setSelectedWords((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(wordId)) {
-        newSet.delete(wordId);
-      } else {
-        newSet.add(wordId);
-      }
+      newSet.has(wordId) ? newSet.delete(wordId) : newSet.add(wordId);
       return newSet;
     });
   };
 
-  // ✅ Handle cancel selection
   const handleCancel = () => {
     setSelectedWords(new Set());
   };
 
-  // ✅ Handle review functionality
-  // ✅ تحديث دالة handleReview لإضافة wordIds إلى الـ store
-  const handleReview = async () => {
-    try {
-      const selectedWordIds = Array.from(selectedWords);
-      dispatch(setWordIds(selectedWordIds));
-
-      setWords((prevWords) =>
-        prevWords.map((word) =>
-          selectedWords.has(word._id)
-            ? { ...word, isReviewed: !word.isReviewed }
-            : word
-        )
-      );
-
-      setSelectedWords(new Set());
-
-      // ✅ التوجيه إلى صفحة الأسئلة
-      navigate("/questions?mode=review");
-
-      console.log("تم حفظ الكلمات المختارة في الـ store:", selectedWordIds);
-    } catch (err) {
-      console.error("Error updating review status:", err);
-    }
+  const handleReview = () => {
+    const selectedWordIds = Array.from(selectedWords);
+    dispatch(setWordIds(selectedWordIds));
+    setSelectedWords(new Set());
+    navigate("/questions?mode=review");
   };
 
-  // ✅ دالة لمسح wordIds من الـ store (اختيارية)
+  const handleQuickReview = () => {
+    const selectedWordIds = Array.from(selectedWords);
+    dispatch(setWordIds(selectedWordIds));
+    setSelectedWords(new Set());
+    navigate("/questions?mode=quick-review");
+  };
+
+  const handleLearn = () => {
+    const selectedWordIds = Array.from(selectedWords);
+    dispatch(setWordIds(selectedWordIds));
+    setSelectedWords(new Set());
+    navigate("/questions?mode=learn");
+  };
+
   const handleClearStore = () => {
     dispatch(clearWordIds());
     console.log("تم مسح wordIds من الـ store");
@@ -177,21 +82,19 @@ function LessonDetail() {
     );
   }
 
-  // ✅ Calculate statistics
   const reviewedWords = selectedLesson.words.filter(
     (word) => word.isReviewed
   ).length;
   const hardWords = selectedLesson.words.filter((word) => word.isHard).length;
+  const reviewedPercentage = selectedLesson.reviewedPercentage || 0;
 
   return (
     <div className="relative flex flex-1 h-full p-4" dir="rtl">
       <div className="flex-1 flex flex-col w-full p-8 py-10 relative overflow-hidden">
-        {/* Background shapes */}
         <div className="absolute inset-0 pointer-events-none">
           {shapes.map(renderShape)}
         </div>
 
-        {/* Header with info icon and title */}
         <div className="flex items-center justify-between mb-6 relative z-10">
           <div className="w-6 h-6 rounded-full border border-gray-400 flex items-center justify-center">
             <Info size={12} className="text-gray-500" />
@@ -201,73 +104,82 @@ function LessonDetail() {
           </h1>
         </div>
 
-        {/* ✅ Action buttons - show when words are selected */}
         {selectedWords.size > 0 && (
-          <div className="absolute top-10 left-1/2 -translate-x-1/2 flex justify-center gap-4 mb-6 z-40">
+          <div className="absolute top-10 left-1/2 -translate-x-1/2 flex justify-center gap-2 mb-6 z-40">
             <button
               onClick={handleCancel}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 text-sm"
             >
-              <X size={16} />
-              إلغاء ({selectedWords.size})
+              <X size={14} /> إلغاء ({selectedWords.size})
+            </button>
+            <button
+              onClick={handleQuickReview}
+              className="flex items-center gap-2 px-3 py-2 bg-orange-500 hover:bg-orange-600 rounded-lg text-white text-sm"
+            >
+              <Zap size={14} /> مراجعة سريعة
             </button>
             <button
               onClick={handleReview}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-white transition-colors"
+              className="flex items-center gap-2 px-3 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-white text-sm"
             >
-              <Eye size={16} />
-              مراجعة
+              <Eye size={14} /> مراجعة
+            </button>
+            <button
+              onClick={handleLearn}
+              className="flex items-center gap-2 px-3 py-2 bg-green-500 hover:bg-green-600 rounded-lg text-white text-sm"
+            >
+              <BookOpen size={14} /> تعلم
             </button>
           </div>
         )}
 
         <div className="flex flex-1 flex-col relative z-10">
-          {/* Progress and count section */}
           <div className="mb-8">
-            {/* Word count display */}
             <div className="text-center mb-6">
               <div className="mb-3">
                 <span className="text-6xl font-light text-gray-900">
-                  {selectedLesson.wordsNumber}
+                  {selectedLesson.words?.length || 0}
                 </span>
               </div>
               <div className="text-sm text-gray-500">
                 <div>كلمة في هذا الدرس</div>
-                {/* ✅ إضافة عرض الكلمات الصعبة */}
                 {hardWords > 0 && (
                   <div className="mt-1 text-orange-600 font-medium">
                     {hardWords} كلمة صعبة
                   </div>
                 )}
+                {selectedWords.size > 0 && (
+                  <div className="mt-1 text-blue-600 font-medium">
+                    {selectedWords.size} كلمة محددة
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Progress bar */}
             <div className="mb-6">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-xs text-gray-500">الكلمات المراجعة</span>
                 <span className="text-xs font-medium text-gray-800">
-                  {progressPercent}%
+                  {reviewedPercentage}%
                 </span>
               </div>
               <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
                 <div
                   className="h-full rounded-full bg-gray-800 transition-all duration-700"
-                  style={{ width: `${progressPercent}%` }}
+                  style={{ width: `${reviewedPercentage}%` }}
                 ></div>
               </div>
             </div>
           </div>
 
-          {/* Words grid */}
           <div className="flex-1 mb-8">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-              {selectedLesson.words.map((wordObj, index) => (
+              {selectedLesson.words?.map((wordObj) => (
                 <div
-                  key={wordObj._id || index}
-                  onClick={() => handleWordClick(wordObj._id || index)}
+                  key={wordObj._id}
+                  onClick={() => handleWordClick(wordObj._id)}
                   className={`border rounded-xl p-3 text-center transition-all cursor-pointer select-none relative ${
-                    selectedWords.has(wordObj._id || index)
+                    selectedWords.has(wordObj._id)
                       ? "bg-blue-500 border-blue-600 text-white shadow-lg transform scale-105"
                       : wordObj.isHard
                       ? wordObj.isReviewed
@@ -278,12 +190,11 @@ function LessonDetail() {
                       : "bg-gray-50 border-gray-200 hover:bg-gray-100"
                   }`}
                 >
-                  {/* ✅ Hard word indicator */}
                   {wordObj.isHard && (
                     <div className="absolute -top-1 -right-1">
                       <div
                         className={`w-4 h-4 rounded-full flex items-center justify-center ${
-                          selectedWords.has(wordObj._id || index)
+                          selectedWords.has(wordObj._id)
                             ? "bg-white text-orange-500"
                             : wordObj.isReviewed
                             ? "bg-orange-500 text-white"
@@ -297,7 +208,7 @@ function LessonDetail() {
 
                   <div
                     className={`text-sm font-medium mb-1 ${
-                      selectedWords.has(wordObj._id || index)
+                      selectedWords.has(wordObj._id)
                         ? "text-white"
                         : wordObj.isHard
                         ? wordObj.isReviewed
@@ -313,7 +224,7 @@ function LessonDetail() {
                   {wordObj.translation && (
                     <div
                       className={`text-xs ${
-                        selectedWords.has(wordObj._id || index)
+                        selectedWords.has(wordObj._id)
                           ? "text-blue-100"
                           : wordObj.isHard
                           ? wordObj.isReviewed
@@ -330,7 +241,6 @@ function LessonDetail() {
             </div>
           </div>
 
-          {/* Action buttons */}
           <div className="flex items-center justify-between gap-3 mt-auto">
             <button
               onClick={() => setShowModal(true)}
@@ -349,7 +259,6 @@ function LessonDetail() {
           </div>
         </div>
 
-        {/* Modal */}
         <ModalAddWord
           showModal={showModal}
           lessonId={selectedLesson._id}
