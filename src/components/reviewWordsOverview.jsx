@@ -41,7 +41,7 @@ export default function ReviewWordsOverview() {
           <div className="text-center mb-16">
             <div className="mb-3">
               <span className="text-6xl font-light text-gray-900">
-                {reviewCount}
+                {reviewCount ?? "0"}
               </span>
             </div>
             <div className="text-sm text-gray-500">
