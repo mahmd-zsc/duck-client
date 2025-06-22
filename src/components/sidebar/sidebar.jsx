@@ -1,7 +1,6 @@
 import React from "react";
-import { Home, BookOpen } from "lucide-react";
+import { Home, BookOpen, StickyNote } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-//import logoImage from "../../../images/deepstash-grow-with-app-768x576-removebg-preview.png";
 import logoImage from "../../../images/Lexi.png";
 
 const Sidebar = () => {
@@ -18,25 +17,25 @@ const Sidebar = () => {
       label: "الكلمات",
       icon: BookOpen,
     },
+    {
+      path: "/notes",
+      label: "الملاحظات", // ✅
+      icon: StickyNote, // ✅
+    },
   ];
 
   return (
     <>
-      {/* عنصر وهمي لحجز المساحة */}
       <div className="w-80 flex-shrink-0" aria-hidden="true"></div>
-
-      {/* الـ Sidebar الفعلي مع position fixed */}
       <div
         className="fixed top-0 right-0 w-80 h-screen bg-white border-l border-gray-100 flex flex-col"
         dir="rtl"
       >
-        {/* Logo Section */}
         <div className="relative flex items-center justify-center py-8 px-6">
           <img className="h-42 w-auto" src={logoImage} alt="Logo" />
           <div className="absolute w-full h-full"></div>
         </div>
 
-        {/* Navigation Menu */}
         <nav className="flex-1 px-4">
           <ul className="space-y-2">
             {menuItems.map((item) => {
@@ -65,7 +64,6 @@ const Sidebar = () => {
           </ul>
         </nav>
 
-        {/* Bottom Section - Optional */}
         <div className="p-4 border-t border-gray-100">
           <div className="text-center text-xs text-gray-400">إصدار 1.0</div>
         </div>

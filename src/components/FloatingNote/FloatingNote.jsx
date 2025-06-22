@@ -1,141 +1,158 @@
-// FloatingNote.jsx
-import { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
+import { StickyNote, Plus, X, Trash2 } from "lucide-react";
 
-export default function FloatingNote() {
-  /* ---------- State ---------- */
-  const [open, setOpen] = useState(false); // حالة المربع
-  const [note, setNote] = useState(""); // النص المكتوب
-  const [pos, setPos] = useState({ x: 40, y: 40 }); // مكان الدايرة
-  const dragRef = useRef(null);
-  const offset = useRef({ x: 0, y: 0 });
+const FloatingNote = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [noteText, setNoteText] = useState("");
+  const [notes, setNotes] = useState([]);
 
-  /* ---------- Drag handlers ---------- */
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (!dragRef.current) return;
-      setPos({
-        x: e.clientX - offset.current.x,
-        y: e.clientY - offset.current.y,
-      });
+ 
+
+  const toggleNote = () => setIsOpen(!isOpen);
+
+  const handleAddNote = () => {
+    if (noteText.trim() === "") return;
+    const newNote = {
+      id: Date.now(),
+      text: noteText.trim(),
+      timestamp: new Date().toLocaleTimeString('ar-EG', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      })
     };
-    const handleMouseUp = () => (dragRef.current = null);
-
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, []);
-
-  const startDrag = (e) => {
-    dragRef.current = true;
-    offset.current = {
-      x: e.clientX - pos.x,
-      y: e.clientY - pos.y,
-    };
+    setNotes((prev) => [newNote, ...prev]);
+    setNoteText("");
+    setIsOpen(false);
   };
 
-  /* ---------- UI ---------- */
+  const handleDeleteNote = (noteId) => {
+    setNotes((prev) => prev.filter(note => note.id !== noteId));
+  };
+
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && e.ctrlKey) {
+      handleAddNote();
+    }
+  };
+
   return (
     <>
-      {/* الدايرة الصغيرة */}
-      {!open && (
-        <div
-          onMouseDown={startDrag}
-          onDoubleClick={() => setOpen(true)}
-          style={{
-            position: "fixed",
-            left: pos.x,
-            top: pos.y,
-            width: 50,
-            height: 50,
-            borderRadius: "50%",
-            background: "#0aa",
-            cursor: "grab",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#fff",
-            userSelect: "none",
-            zIndex: 9999,
-          }}
-          title="Double-click to add note"
-        >
-          📝
-        </div>
-      )}
+      {/* الزر العائم */}
+      <div className="fixed bottom-6 left-6 z-50">
+  <button
+    onClick={toggleNote}
+    className="w-12 h-12 rounded-full bg-blue-500 hover:bg-blue-600 text-white shadow-lg flex items-center justify-center transition-all"
+  >
+    {isOpen ? <X size={20} /> : <StickyNote size={20} />}
+  </button>
+</div>
 
-      {/* البوكس الكبير */}
-      {open && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.4)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 10000,
-          }}
-          onClick={() => setOpen(false)} // اقفل لو ضغطت برا البوكس
-        >
-          <div
-            onClick={(e) => e.stopPropagation()} // منع غلق البوكس لو ضغطت جواه
-            style={{
-              width: 400,
-              maxWidth: "90%",
-              background: "#fff",
-              borderRadius: 8,
-              padding: 20,
-              boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
-              display: "flex",
-              flexDirection: "column",
-              gap: 12,
-            }}
+      {/* النافذة بتصميم NoteEditModal */}
+      {isOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6" onClick={toggleNote}>
+          <div 
+            className="bg-white w-full max-w-2xl h-[70vh] rounded-3xl shadow-2xl overflow-hidden relative border-2 animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
           >
-            <textarea
-              autoFocus
-              rows={6}
-              placeholder="اكتب ملاحظتك هنا..."
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              style={{ resize: "vertical", padding: 10 }}
-            />
-            <div
-              style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}
+            {/* زرار الإغلاق */}
+            <button
+              onClick={toggleNote}
+              className="absolute top-6 right-6 z-10 p-3 hover:bg-gray-100 rounded-full transition-colors"
             >
-              <button
-                onClick={() => setOpen(false)}
-                style={{
-                  padding: "6px 12px",
-                  background: "#ccc",
-                  border: 0,
-                  borderRadius: 4,
+              <X size={24} className="text-gray-500" />
+            </button>
+
+            {/* عنوان الملاحظة السريعة */}
+            <div className="absolute top-6 left-6 z-10">
+              <h2 className="text-gray-700 text-lg font-semibold">ملاحظة سريعة</h2>
+            </div>
+
+            {/* منطقة الكتابة الكاملة */}
+            <div className="h-full p-8 pt-20 pb-20">
+              <textarea
+                value={noteText}
+                onChange={(e) => setNoteText(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="ابدأ الكتابة... (Ctrl+Enter للحفظ)"
+                className="w-full h-full border-0 bg-transparent text-gray-800 placeholder-gray-400 focus:outline-none resize-none text-xl leading-loose"
+                style={{ 
+                  fontFamily: "'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                  direction: 'rtl'
                 }}
+                autoFocus
+              />
+            </div>
+
+            {/* أزرار الحفظ والإلغاء */}
+            <div className="absolute bottom-6 left-6 right-6 flex gap-3">
+              <button
+                onClick={handleAddNote}
+                disabled={!noteText.trim()}
+                className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white rounded-xl transition-all text-base font-semibold disabled:cursor-not-allowed"
               >
-                Cancel
+                <Plus size={18} className="inline ml-2" />
+                حفظ الملاحظة
               </button>
               <button
-                onClick={() => {
-                  console.log("Saved note:", note);
-                  setNote("");
-                  setOpen(false);
-                }}
-                style={{
-                  padding: "6px 12px",
-                  background: "#0aa",
-                  color: "#fff",
-                  border: 0,
-                  borderRadius: 4,
-                }}
+                onClick={toggleNote}
+                className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl transition-all"
               >
-                Save
+                إلغاء
               </button>
             </div>
           </div>
         </div>
       )}
+
+      {/* عرض الملاحظات في الزاوية */}
+      {notes.length > 0 && (
+        <div className="fixed top-6 right-6 z-40 space-y-3 max-w-sm max-h-96 overflow-y-auto">
+          <div className="text-xs text-gray-500 font-medium px-2 mb-2">
+            الملاحظات السريعة ({notes.length})
+          </div>
+          {notes.map((note, index) => (
+            <div
+              key={note.id}
+              className={`group relative px-4 py-3 rounded-xl shadow-lg border-2 text-sm transition-all transform hover:scale-105 hover:shadow-xl ${getBackgroundColor(index)}`}
+            >
+              <div className="flex justify-between items-start gap-2">
+                <p className="flex-1 leading-relaxed line-clamp-3" style={{ direction: 'rtl' }}>
+                  {note.text}
+                </p>
+                <button
+                  onClick={() => handleDeleteNote(note.id)}
+                  className="opacity-0 group-hover:opacity-100 p-1 rounded-full hover:bg-white/50 transition-all flex-shrink-0"
+                >
+                  <Trash2 size={14} className="text-red-500" />
+                </button>
+              </div>
+              <div className="text-xs opacity-60 mt-2 text-left">
+                {note.timestamp}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* إضافة الأنيميشن */}
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(10px) scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.2s ease-out;
+        }
+      `}</style>
     </>
   );
-}
+};
+
+export default FloatingNote;

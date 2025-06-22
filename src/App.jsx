@@ -7,8 +7,7 @@ import AddLesson from "./pages/AddLesson";
 import LessonDetail from "./pages/LessonDetail";
 import Sidebar from "./components/sidebar/sidebar";
 import Questions from "./pages/Questions";
-
-/* ❶ ـــ استيراد الكمبوننت الجديد */
+import Notes from "./pages/Notes"; // ✅
 import FloatingNote from "./components/FloatingNote/FloatingNote";
 
 function App() {
@@ -17,7 +16,6 @@ function App() {
 
   return (
     <>
-      {/* ❷ ـــ عنصر الفلكسينج الرئيسي */}
       <div className="flex">
         <div className="relative w-full">
           {!isQuestionPage && <Header />}
@@ -28,16 +26,13 @@ function App() {
             <Route path="/add-lesson" element={<AddLesson />} />
             <Route path="/lesson/:id" element={<LessonDetail />} />
             <Route path="/questions/" element={<Questions />} />
+            <Route path="/notes" element={<Notes />} /> {/* ✅ هنا */}
           </Routes>
         </div>
         {!isQuestionPage && <Sidebar />}
       </div>
 
-      {/* ❸ ـــ الفلوتينج نوت دايمًا متاحة فوق الكل */}
-      {/* <FloatingNote /> */}
-
-      {/* ❹ ـــ (اختياري) الفوتر لو عندك */}
-      {/* <Footer /> */}
+      <FloatingNote />
     </>
   );
 }
