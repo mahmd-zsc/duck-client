@@ -1,37 +1,57 @@
-import React, { useState } from "react";
-import { StickyNote, Plus, X, Trash2 } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { StickyNote, Plus, X } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { addNote } from "../../redux/slices/noteSlice";
+import { createNoteApi } from "../../redux/apiCalls/noteApi";
 
 const FloatingNote = () => {
+  const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
   const [noteText, setNoteText] = useState("");
-  const [notes, setNotes] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
 
- 
+  // منع التمرير عند فتح النافذة
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+    // تنظيف التأثير عند unmount
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isOpen]);
 
   const toggleNote = () => setIsOpen(!isOpen);
 
-  const handleAddNote = () => {
+  const handleAddNote = async () => {
     if (noteText.trim() === "") return;
-    const newNote = {
-      id: Date.now(),
-      text: noteText.trim(),
-      timestamp: new Date().toLocaleTimeString('ar-EG', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-      })
-    };
-    setNotes((prev) => [newNote, ...prev]);
-    setNoteText("");
-    setIsOpen(false);
-  };
 
-  const handleDeleteNote = (noteId) => {
-    setNotes((prev) => prev.filter(note => note.id !== noteId));
-  };
+    setIsSaving(true);
 
+    try {
+      const newNote = {
+        content: noteText.trim(),
+      };
+
+      const createdNote = await createNoteApi(newNote);
+      dispatch(addNote(createdNote));
+
+      console.log("تم إنشاء الملاحظة بنجاح:", createdNote);
+      setNoteText("");
+      setIsOpen(false);
+    } catch (error) {
+      console.error("خطأ في حفظ الملاحظة:", error);
+      alert("حدث خطأ أثناء حفظ الملاحظة. يرجى المحاولة مرة أخرى.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && e.ctrlKey) {
+    if (e.key === "Enter" && e.ctrlKey) {
       handleAddNote();
     }
   };
@@ -40,18 +60,21 @@ const FloatingNote = () => {
     <>
       {/* الزر العائم */}
       <div className="fixed bottom-6 left-6 z-50">
-  <button
-    onClick={toggleNote}
-    className="w-12 h-12 rounded-full bg-blue-500 hover:bg-blue-600 text-white shadow-lg flex items-center justify-center transition-all"
-  >
-    {isOpen ? <X size={20} /> : <StickyNote size={20} />}
-  </button>
-</div>
+        <button
+          onClick={toggleNote}
+          className="w-14 h-14 rounded-full bg-blue-500 hover:bg-blue-600 text-white shadow-lg flex items-center justify-center transition-all hover:shadow-xl hover:scale-105"
+        >
+          {isOpen ? <X size={24} /> : <StickyNote size={24} />}
+        </button>
+      </div>
 
-      {/* النافذة بتصميم NoteEditModal */}
+      {/* النافذة المنبثقة */}
       {isOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6" onClick={toggleNote}>
-          <div 
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6"
+          onClick={toggleNote}
+        >
+          <div
             className="bg-white w-full max-w-2xl h-[70vh] rounded-3xl shadow-2xl overflow-hidden relative border-2 animate-fade-in"
             onClick={(e) => e.stopPropagation()}
           >
@@ -65,10 +88,12 @@ const FloatingNote = () => {
 
             {/* عنوان الملاحظة السريعة */}
             <div className="absolute top-6 left-6 z-10">
-              <h2 className="text-gray-700 text-lg font-semibold">ملاحظة سريعة</h2>
+              <h2 className="text-gray-700 text-lg font-semibold">
+                ملاحظة سريعة
+              </h2>
             </div>
 
-            {/* منطقة الكتابة الكاملة */}
+            {/* منطقة الكتابة */}
             <div className="h-full p-8 pt-20 pb-20">
               <textarea
                 value={noteText}
@@ -76,9 +101,10 @@ const FloatingNote = () => {
                 onKeyPress={handleKeyPress}
                 placeholder="ابدأ الكتابة... (Ctrl+Enter للحفظ)"
                 className="w-full h-full border-0 bg-transparent text-gray-800 placeholder-gray-400 focus:outline-none resize-none text-xl leading-loose"
-                style={{ 
-                  fontFamily: "'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-                  direction: 'rtl'
+                style={{
+                  fontFamily:
+                    "'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                  direction: "rtl",
                 }}
                 autoFocus
               />
@@ -88,50 +114,27 @@ const FloatingNote = () => {
             <div className="absolute bottom-6 left-6 right-6 flex gap-3">
               <button
                 onClick={handleAddNote}
-                disabled={!noteText.trim()}
-                className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white rounded-xl transition-all text-base font-semibold disabled:cursor-not-allowed"
+                disabled={!noteText.trim() || isSaving}
+                className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white rounded-xl transition-all text-base font-semibold disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                <Plus size={18} className="inline ml-2" />
-                حفظ الملاحظة
+                {isSaving ? (
+                  <span>جاري الحفظ...</span>
+                ) : (
+                  <>
+                    <Plus size={18} />
+                    <span>حفظ الملاحظة</span>
+                  </>
+                )}
               </button>
               <button
                 onClick={toggleNote}
-                className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl transition-all"
+                disabled={isSaving}
+                className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl transition-all font-semibold disabled:opacity-50"
               >
                 إلغاء
               </button>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* عرض الملاحظات في الزاوية */}
-      {notes.length > 0 && (
-        <div className="fixed top-6 right-6 z-40 space-y-3 max-w-sm max-h-96 overflow-y-auto">
-          <div className="text-xs text-gray-500 font-medium px-2 mb-2">
-            الملاحظات السريعة ({notes.length})
-          </div>
-          {notes.map((note, index) => (
-            <div
-              key={note.id}
-              className={`group relative px-4 py-3 rounded-xl shadow-lg border-2 text-sm transition-all transform hover:scale-105 hover:shadow-xl ${getBackgroundColor(index)}`}
-            >
-              <div className="flex justify-between items-start gap-2">
-                <p className="flex-1 leading-relaxed line-clamp-3" style={{ direction: 'rtl' }}>
-                  {note.text}
-                </p>
-                <button
-                  onClick={() => handleDeleteNote(note.id)}
-                  className="opacity-0 group-hover:opacity-100 p-1 rounded-full hover:bg-white/50 transition-all flex-shrink-0"
-                >
-                  <Trash2 size={14} className="text-red-500" />
-                </button>
-              </div>
-              <div className="text-xs opacity-60 mt-2 text-left">
-                {note.timestamp}
-              </div>
-            </div>
-          ))}
         </div>
       )}
 

@@ -57,3 +57,18 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #fc8716;
 }
+
+@keyframes expand-note {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-expand-note {
+  animation: expand-note 0.3s ease-out forwards;
+}

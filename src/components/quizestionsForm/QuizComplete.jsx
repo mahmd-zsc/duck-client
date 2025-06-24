@@ -19,43 +19,48 @@ export default function QuizComplete({ quizzesList, hardCandidates, mode }) {
 
     const sendReviewUpdates = async () => {
       try {
+        // 1. تحديث حالة المراجعة مع التاريخ وزيادة العداد
         const reviewedRes = await axiosInstance.patch(
           "/words/batch/mark-reviewed",
-          { wordIds }
+          {
+            wordIds,
+            lastReviewed: new Date().toISOString(),
+            incrementCount: true,
+          }
         );
 
+        // 2. تحديث إحصائيات المراجعة
         const statsRes = await axiosInstance.patch(
           "/words/batch/review-stats",
           { wordIds }
         );
 
-        console.log("✅ Reviewed:", reviewedRes.data.message);
-        console.log("✅ Stats:", statsRes.data.message);
+        console.log("✅ تم التحديث:", {
+          reviewed: reviewedRes.data.message,
+          stats: statsRes.data.message,
+        });
 
-        // لو المود hard-review، ابعت الكلمات السهلة
+        // 3. إذا كان وضع المراجعة الصعبة
         if (mode === "hard-review") {
-          const easyWordIds = wordIds.filter((id) => !hardWordIds.includes(id));
-
-          if (easyWordIds.length > 0) {
-            const easyRes = await axiosInstance.patch(
-              "/words/batch/mark-easy",
-              { wordIds: easyWordIds }
-            );
-            console.log("✅ كلمات سهلة:", easyRes.data.message);
-          }
+          const easyRes = await axiosInstance.patch("/words/batch/mark-easy", {
+            wordIds,
+          });
+          console.log("✅ تم تصنيف الكلمات كسهلة:", easyRes.data.message);
         }
 
+        // 4. إزالة تصنيف الصعوبة إذا لزم
         if (hardWordIds.length > 0) {
-          const hardRes = await axiosInstance.patch("/words/batch/mark-hard", {
-            wordIds: hardWordIds,
-          });
-          console.log("✅ كلمات صعبة:", hardRes.data.message);
+          const hardRes = await axiosInstance.patch(
+            "/words/batch/remove-hard",
+            { wordIds: hardWordIds }
+          );
+          console.log("✅ تم إزالة تصنيف الصعوبة:", hardRes.data.message);
         }
       } catch (error) {
-        console.error(
-          "❌ خطأ:",
-          error.response?.data?.message || error.message
-        );
+        console.error("❌ خطأ في التحديث:", {
+          error: error.response?.data?.message || error.message,
+          wordIds,
+        });
       }
     };
 
@@ -73,7 +78,7 @@ export default function QuizComplete({ quizzesList, hardCandidates, mode }) {
 
   useEffect(() => {
     victorySound.play();
-    const timer = setTimeout(runConfetti, 500); // تأخير بسيط
+    const timer = setTimeout(runConfetti, 500);
 
     return () => {
       clearTimeout(timer);
@@ -83,16 +88,14 @@ export default function QuizComplete({ quizzesList, hardCandidates, mode }) {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center gap-6 flex-1 h-full  p-4 bg-white">
+    <div className="flex flex-col items-center justify-center gap-6 flex-1 h-full p-4 bg-white">
       <div className="text-center max-w-md">
         <h1 className="text-4xl font-bold text-gray-800 mb-4">
           <span className="text-blue-400">إنجاز رائع!</span>
         </h1>
-
         <p className="text-xl text-gray-600 mb-8">
           لقد أكملت جميع الأسئلة بنجاح 🌟
         </p>
-
         <button
           onClick={() => handlerClick()}
           className="px-8 py-3 bg-blue-100 text-blue-600 rounded-lg 

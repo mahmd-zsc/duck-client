@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { BookOpen, Trash2, Plus } from "lucide-react";
+import { BookOpen, Trash2, Plus, Edit3 } from "lucide-react";
 import {
   fetchNotes,
   removeNote,
@@ -14,10 +14,10 @@ import { createNoteApi, updateNoteApi } from "../redux/apiCalls/noteApi";
 const Notes = () => {
   const dispatch = useDispatch();
   const notes = useSelector((state) => state.note.notes);
+  const loading = useSelector((state) => state.note.loading);
 
   const [selectedNote, setSelectedNote] = useState(null);
   const [selectedNoteIndex, setSelectedNoteIndex] = useState(null);
-  const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -40,19 +40,18 @@ const Notes = () => {
 
   useEffect(() => {
     document.title = "Lexi - قائمة الملاحظات";
-    if (notes.length < 1) dispatch(fetchNotes());
-  }, [dispatch]);
+    if (notes.length < 1 && !loading) {
+      dispatch(fetchNotes());
+    }
+  }, [dispatch, notes.length, loading]);
 
   const shapes = useMemo(() => {
     return generateShapes(10);
   }, []);
 
-
-
   const handleNoteClick = (note, index) => {
     setSelectedNote(note);
     setSelectedNoteIndex(index);
-    setEditTitle(note.title);
     setEditContent(note.content || "");
     setIsCreating(false);
   };
@@ -60,73 +59,91 @@ const Notes = () => {
   const handleCreateNote = () => {
     setSelectedNote(null);
     setSelectedNoteIndex(null);
-    setEditTitle("");
     setEditContent("");
     setIsCreating(true);
   };
 
   const handleSaveNote = async () => {
-    if (!editTitle?.trim()) return;
+    if (!editContent?.trim()) {
+      alert("يرجى كتابة محتوى للملاحظة");
+      return;
+    }
 
     setIsSaving(true);
 
     try {
       if (isCreating) {
         const newNote = {
-          title: editTitle,
-          content: editContent,
-          createdAt: new Date().toISOString(),
+          content: editContent.trim(),
         };
-        
+
         // إرسال إلى الباك إند باستخدام createNoteApi
         const createdNote = await createNoteApi(newNote);
-        console.log(createdNote)
+
         // إضافة الملاحظة المُنشأة إلى Redux store
         dispatch(addNote(createdNote));
-        
-        console.log('تم إنشاء الملاحظة بنجاح:', createdNote);
+
+        console.log("تم إنشاء الملاحظة بنجاح:", createdNote);
       } else if (selectedNote) {
         const updatedNote = {
-          title: editTitle,
-          content: editContent,
-          updatedAt: new Date().toISOString(),
+          content: editContent.trim(),
         };
-        
+
         // تحديث في الباك إند باستخدام updateNoteApi
-        const updatedNoteFromBackend = await updateNoteApi(selectedNote._id, updatedNote);
-        
+        const updatedNoteFromBackend = await updateNoteApi(
+          selectedNote._id,
+          updatedNote
+        );
+
         // تحديث في Redux store
         dispatch(updateNote(updatedNoteFromBackend));
-        
-        console.log('تم تحديث الملاحظة بنجاح:', updatedNoteFromBackend);
+
+        console.log("تم تحديث الملاحظة بنجاح:", updatedNoteFromBackend);
       }
 
       handleCloseModal();
     } catch (error) {
-      console.error('خطأ في حفظ الملاحظة:', error);
-      // يمكنك إضافة toast notification هنا لإظهار الخطأ للمستخدم
-      alert('حدث خطأ أثناء حفظ الملاحظة. يرجى المحاولة مرة أخرى.');
+      console.error("خطأ في حفظ الملاحظة:", error);
+      alert("حدث خطأ أثناء حفظ الملاحظة. يرجى المحاولة مرة أخرى.");
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleDeleteNote = (noteId, e) => {
+  const handleDeleteNote = async (noteId, e) => {
     e.stopPropagation();
-    dispatch(removeNote(noteId));
+
+    if (!confirm("هل أنت متأكد من حذف هذه الملاحظة؟")) {
+      return;
+    }
+
+    try {
+      dispatch(removeNote(noteId));
+    } catch (error) {
+      console.error("خطأ في حذف الملاحظة:", error);
+      alert("حدث خطأ أثناء حذف الملاحظة");
+    }
   };
 
-  const handleDeleteCurrentNote = () => {
-    if (selectedNote) {
+  const handleDeleteCurrentNote = async () => {
+    if (!selectedNote) return;
+
+    if (!confirm("هل أنت متأكد من حذف هذه الملاحظة؟")) {
+      return;
+    }
+
+    try {
       dispatch(removeNote(selectedNote._id));
       handleCloseModal();
+    } catch (error) {
+      console.error("خطأ في حذف الملاحظة:", error);
+      alert("حدث خطأ أثناء حذف الملاحظة");
     }
   };
 
   const handleCloseModal = () => {
     setSelectedNote(null);
     setSelectedNoteIndex(null);
-    setEditTitle("");
     setEditContent("");
     setIsCreating(false);
   };
@@ -141,57 +158,38 @@ const Notes = () => {
         <div
           key={note._id}
           onClick={() => handleNoteClick(note, index)}
-          className={`border rounded-xl p-4 transition-all duration-200 cursor-pointer hover:shadow-md ${getBackgroundColor(
+          className={`group border rounded-xl p-4 transition-all duration-200 cursor-pointer hover:shadow-md hover:scale-105 ${getBackgroundColor(
             index
           )}`}
         >
           <div className="flex justify-between items-start mb-3">
-            <h2 className="text-lg font-semibold text-gray-800 line-clamp-2">
-              {note.title}
-            </h2>
-            <button
-              onClick={(e) => handleDeleteNote(note._id, e)}
-              className="p-1 rounded hover:bg-white/50 transition-colors opacity-0 group-hover:opacity-100"
-            >
-              <Trash2 size={16} className="text-red-500" />
-            </button>
+            <div className="flex-1">
+              <p className="text-base text-gray-800 line-clamp-3 mb-2">
+                {note.content || "ملاحظة فارغة"}
+              </p>
+            </div>
           </div>
-          <p className="text-sm text-gray-600 line-clamp-4">{note.content}</p>
+          <div className="pt-3 border-t border-gray-200/50">
+            <p className="text-xs text-gray-400">
+              {note.createdAt &&
+                new Date(note.createdAt).toLocaleDateString("ar-EG")}
+            </p>
+          </div>
         </div>
       ))}
     </div>
   );
 
-  const ListView = () => (
-    <div className="space-y-3">
-      {notes.map((note, index) => (
-        <div
-          key={note._id}
-          onClick={() => handleNoteClick(note, index)}
-          className={`border rounded-xl p-4 transition-all duration-200 cursor-pointer hover:shadow-md ${getBackgroundColor(
-            index
-          )}`}
-        >
-          <div className="flex items-start justify-between">
-            <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-semibold text-gray-800 mb-2 line-clamp-1">
-                {note.title}
-              </h2>
-              <p className="text-base text-gray-600 line-clamp-2">
-                {note.content}
-              </p>
-            </div>
-            <button
-              onClick={(e) => handleDeleteNote(note._id, e)}
-              className="p-2 rounded-lg hover:bg-white/50 transition-colors ml-4"
-            >
-              <Trash2 size={16} className="text-red-500" />
-            </button>
-          </div>
+  if (loading) {
+    return (
+      <div className="flex flex-1 h-full items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-500">جاري تحميل الملاحظات...</p>
         </div>
-      ))}
-    </div>
-  );
+      </div>
+    );
+  }
 
   return (
     <>
@@ -201,28 +199,40 @@ const Notes = () => {
             {shapes.map(renderShape)}
           </div>
 
-          {/* أزرار التحكم */}
+          {/* العنوان وأزرار التحكم */}
           <div className="mb-6 relative z-10">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-3xl font-bold text-gray-800">الملاحظات</h1>
               <button
                 onClick={handleCreateNote}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-white text-sm transition-all"
+                className="flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 rounded-xl text-white font-medium transition-all hover:shadow-lg"
               >
-                <Plus size={14} />
+                <Plus size={20} />
                 ملاحظة جديدة
               </button>
             </div>
+            <p className="text-gray-600">
+              {notes.length > 0 ? `${notes.length} ملاحظة` : "لا توجد ملاحظات"}
+            </p>
           </div>
 
           <div className="flex flex-1 flex-col relative z-10">
             <div className="flex-1 mb-8">
               {notes.length === 0 ? (
-                <div className="text-center py-12">
-                  <BookOpen size={48} className="mx-auto text-gray-300 mb-4" />
-                  <p className="text-gray-500 text-lg mb-2">لا توجد ملاحظات</p>
-                  <p className="text-gray-400 text-sm">
-                    ابدأ بإضافة ملاحظة جديدة
+                <div className="text-center py-16">
+                  <BookOpen size={64} className="mx-auto text-gray-300 mb-6" />
+                  <h3 className="text-xl font-semibold text-gray-500 mb-2">
+                    لا توجد ملاحظات بعد
+                  </h3>
+                  <p className="text-gray-400 text-base mb-6 max-w-md mx-auto">
+                    ابدأ بإنشاء ملاحظتك الأولى لحفظ أفكارك ومعلوماتك المهمة
                   </p>
+                  <button
+                    onClick={handleCreateNote}
+                    className="px-6 py-3 bg-blue-500 hover:bg-blue-600 rounded-xl text-white font-medium transition-all"
+                  >
+                    إنشاء ملاحظة جديدة
+                  </button>
                 </div>
               ) : (
                 <GridView />
@@ -236,8 +246,6 @@ const Notes = () => {
       <NoteEditModal
         selectedNote={selectedNote}
         isCreating={isCreating}
-        editTitle={editTitle}
-        setEditTitle={setEditTitle}
         editContent={editContent}
         setEditContent={setEditContent}
         onSave={handleSaveNote}

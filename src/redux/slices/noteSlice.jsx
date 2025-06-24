@@ -8,7 +8,7 @@ import {
 
 const initialState = {
   notes: [],
-  loading: true,
+  loading: false,
   error: null,
 };
 

@@ -1,7 +1,7 @@
 // src/components/quizestionsForm/QuizHeader.jsx
 import { IoCloseOutline } from "react-icons/io5";
-import { clearQuizzes } from "../../redux/slices/quizSlice";
 import { useNavigate } from "react-router-dom";
+import { clearQuizzes } from "../../redux/slices/quizSlice";
 
 export default function QuizHeader({ title }) {
   let navigate = useNavigate();

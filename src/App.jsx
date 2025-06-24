@@ -26,6 +26,7 @@ function App() {
             <Route path="/add-lesson" element={<AddLesson />} />
             <Route path="/lesson/:id" element={<LessonDetail />} />
             <Route path="/questions/" element={<Questions />} />
+            {/* <Route path="/Quizzes/" element={<Quizzes />} /> */}
             <Route path="/notes" element={<Notes />} /> {/* ✅ هنا */}
           </Routes>
         </div>

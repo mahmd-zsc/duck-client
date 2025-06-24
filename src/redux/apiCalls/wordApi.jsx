@@ -41,3 +41,22 @@ export const getHardWordsCountApi = async () => {
     );
   }
 };
+
+export const deleteWordApi = async (wordId) => {
+  try {
+    const response = await axiosInstance.delete(`/words/${wordId}`);
+    return response.data.message || "تم حذف الكلمة بنجاح";
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "فشل في حذف الكلمة");
+  }
+};
+
+// تحديث كلمة
+export const updateWordApi = async (wordId, updatedData) => {
+  try {
+    const response = await axiosInstance.put(`/words/${wordId}`, updatedData);
+    return response.data; // ممكن يرجع الكلمة بعد التحديث أو رسالة نجاح
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "فشل في تحديث الكلمة");
+  }
+};
