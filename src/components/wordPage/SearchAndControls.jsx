@@ -42,7 +42,7 @@ const SearchAndControls = ({
             onClick={onToggleViewMode}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${
               viewMode === "grid"
-                ? "bg-blue-500 text-white"
+                ? "bg-[#ffbb00] text-white"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
@@ -53,7 +53,7 @@ const SearchAndControls = ({
             onClick={onToggleViewMode}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${
               viewMode === "list"
-                ? "bg-blue-500 text-white"
+                ? "bg-[#ffbb00] text-white"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >

@@ -15,7 +15,7 @@ import { generateShapes, renderShape } from "../utils/backgroundShapes";
 import { Info } from "lucide-react";
 // Import Components
 import ActionButtons from "../components/wordPage/ActionButtons";
-import ContextMenu from "../components/wordPage/ContextMenu";
+import ReviewCard from "../components/wordPage/ReviewCard";
 import EditModal from "../components/wordPage/EditModal";
 import SearchAndControls from "../components/wordPage/SearchAndControls";
 import StatisticsSection from "../components/wordPage/StatisticsSection";
@@ -33,22 +33,17 @@ const Words = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState("grid"); // "grid" or "list"
 
-  // Context Menu States
-  const [contextMenu, setContextMenu] = useState({
+  // Review Card States
+  const [reviewCard, setReviewCard] = useState({
     visible: false,
-    x: 0,
-    y: 0,
-    wordId: null,
     wordData: null,
   });
 
   // Edit Modal States
   const [editModal, setEditModal] = useState({
     visible: false,
-    wordData: null
+    wordData: null,
   });
-
-  const contextMenuRef = useRef(null);
 
   useEffect(() => {
     document.title = "Lexi - قائمة الكلمات";
@@ -68,44 +63,6 @@ const Words = () => {
     }
   }, [dispatch]);
 
-  // إغلاق قائمة السياق عند الضغط خارجها
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        contextMenuRef.current &&
-        !contextMenuRef.current.contains(event.target)
-      ) {
-        setContextMenu({
-          visible: false,
-          x: 0,
-          y: 0,
-          wordId: null,
-          wordData: null,
-        });
-      }
-    };
-
-    const handleScroll = () => {
-      setContextMenu({
-        visible: false,
-        x: 0,
-        y: 0,
-        wordId: null,
-        wordData: null,
-      });
-    };
-
-    if (contextMenu.visible) {
-      document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("scroll", handleScroll);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("scroll", handleScroll);
-    };
-  }, [contextMenu.visible]);
-
   const shapes = useMemo(() => {
     return generateShapes(60);
   }, []);
@@ -120,8 +77,7 @@ const Words = () => {
       const meaningLower = wordObj.meaning?.toLowerCase() || "";
 
       return (
-        wordLower.includes(searchLower) ||
-        meaningLower.includes(searchLower)
+        wordLower.includes(searchLower) || meaningLower.includes(searchLower)
       );
     });
   }, [words, searchTerm]);
@@ -139,87 +95,104 @@ const Words = () => {
     e.preventDefault();
     e.stopPropagation();
 
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX;
-    const y = e.clientY;
-
-    setContextMenu({
+    setReviewCard({
       visible: true,
-      x,
-      y,
-      wordId: wordData._id,
       wordData,
     });
   };
 
-  // حذف الكلمة
-  const handleDeleteWord = async () => {
-    if (!contextMenu.wordId) return;
+  // حذف الكلمة من بطاقة المراجعة
+  const handleReviewCardDelete = async () => {
+    if (!reviewCard.wordData?._id) return;
 
     try {
-      await deleteWordApi(contextMenu.wordId);
+      await deleteWordApi(reviewCard.wordData._id);
 
       // تحديث القائمة محلياً
       const updatedWords = words.filter(
-        (word) => word._id !== contextMenu.wordId
+        (word) => word._id !== reviewCard.wordData._id
       );
       dispatch(setAllWords(updatedWords));
 
       // إزالة الكلمة من التحديد إذا كانت محددة
       setSelectedWords((prev) => {
         const newSet = new Set(prev);
-        newSet.delete(contextMenu.wordId);
+        newSet.delete(reviewCard.wordData._id);
         return newSet;
       });
 
-      setContextMenu({ ...contextMenu, visible: false });
+      setReviewCard({ ...reviewCard, visible: false });
     } catch (error) {
       console.error("خطأ في حذف الكلمة:", error);
       alert("حدث خطأ أثناء حذف الكلمة");
     }
   };
 
-  // فتح نافذة التعديل
-  const handleEditWord = () => {
-    if (!contextMenu.wordData) return;
+  // فتح نافذة التعديل من بطاقة المراجعة
+  const handleReviewCardEdit = () => {
+    if (!reviewCard.wordData) return;
 
     setEditModal({
       visible: true,
       wordData: {
-        ...contextMenu.wordData,
-        incorrectPlurals: contextMenu.wordData.incorrectPlurals || [],
-        examples: contextMenu.wordData.examples || [],
-        conjugation: contextMenu.wordData.conjugation || {
-          infinitive: '',
+        ...reviewCard.wordData,
+        incorrectPlurals: reviewCard.wordData.incorrectPlurals || [],
+        examples: reviewCard.wordData.examples || [],
+        conjugation: reviewCard.wordData.conjugation || {
+          infinitive: "",
           present: {
-            ich: '',
-            du: '',
-            er: '',
-            sieShe: '',
-            es: '',
-            wir: '',
-            ihr: '',
-            sieThey: '',
-            Sie: ''
-          }
-        }
-      }
+            ich: "",
+            du: "",
+            er: "",
+            sieShe: "",
+            es: "",
+            wir: "",
+            ihr: "",
+            sieThey: "",
+            Sie: "",
+          },
+        },
+      },
     });
 
-    setContextMenu({ ...contextMenu, visible: false });
+    setReviewCard({ ...reviewCard, visible: false });
+  };
+
+  // تعلم الكلمة من بطاقة المراجعة
+  const handleReviewCardLearn = () => {
+    dispatch(setWordIds([reviewCard.wordData._id]));
+    setReviewCard({ visible: false, wordData: null });
+    navigate("/questions?mode=learn");
+  };
+
+  // مراجعة الكلمة من بطاقة المراجعة
+  const handleReviewCardReview = () => {
+    dispatch(setWordIds([reviewCard.wordData._id]));
+    setReviewCard({ visible: false, wordData: null });
+    navigate("/questions?mode=review");
+  };
+
+  // إغلاق بطاقة المراجعة
+  const closeReviewCard = () => {
+    setReviewCard({ visible: false, wordData: null });
   };
 
   // إغلاق نافذة التعديل
   const closeEditModal = () => {
     setEditModal({
       visible: false,
-      wordData: null
+      wordData: null,
     });
   };
 
   // تحديث الكلمة
   const handleUpdateWord = async () => {
-    if (!editModal.wordData || !editModal.wordData.word?.trim() || !editModal.wordData.meaning?.trim()) return;
+    if (
+      !editModal.wordData ||
+      !editModal.wordData.word?.trim() ||
+      !editModal.wordData.meaning?.trim()
+    )
+      return;
 
     try {
       await updateWordApi(editModal.wordData._id, editModal.wordData);
@@ -390,80 +363,100 @@ const Words = () => {
         </div>
       </div>
 
-      {/* Context Menu */}
-      <ContextMenu
-        visible={contextMenu.visible}
-        x={contextMenu.x}
-        y={contextMenu.y}
-        onEdit={handleEditWord}
-        onDelete={handleDeleteWord}
-        onClose={() => setContextMenu({ ...contextMenu, visible: false })}
-      />
+      {/* Review Card */}
+      {reviewCard.visible && (
+        <ReviewCard
+          wordData={reviewCard.wordData}
+          onEdit={handleReviewCardEdit}
+          onDelete={handleReviewCardDelete}
+          onClose={closeReviewCard}
+          onLearn={handleReviewCardLearn}
+          onReview={handleReviewCardReview}
+        />
+      )}
 
       {/* Edit Modal */}
       <EditModal
         visible={editModal.visible}
         wordData={editModal.wordData}
-        onWordChange={(value) => setEditModal(prev => ({
-          ...prev,
-          wordData: { ...prev.wordData, word: value }
-        }))}
-        onTranslationChange={(value) => setEditModal(prev => ({
-          ...prev,
-          wordData: { ...prev.wordData, meaning: value }
-        }))}
-        onPronunciationChange={(value) => setEditModal(prev => ({
-          ...prev,
-          wordData: { ...prev.wordData, pronunciation: value }
-        }))}
-        onArticleChange={(value) => setEditModal(prev => ({
-          ...prev,
-          wordData: { ...prev.wordData, article: value }
-        }))}
-        onPluralChange={(value) => setEditModal(prev => ({
-          ...prev,
-          wordData: { ...prev.wordData, plural: value }
-        }))}
-        onPluralPronunciationChange={(value) => setEditModal(prev => ({
-          ...prev,
-          wordData: { ...prev.wordData, pluralPronunciation: value }
-        }))}
-        onIncorrectPluralsChange={(value) => setEditModal(prev => ({
-          ...prev,
-          wordData: { ...prev.wordData, incorrectPlurals: value }
-        }))}
-        onTypeChange={(value) => setEditModal(prev => ({
-          ...prev,
-          wordData: { ...prev.wordData, type: value }
-        }))}
-        onConjugationChange={(key, value) => setEditModal(prev => ({
-          ...prev,
-          wordData: {
-            ...prev.wordData,
-            conjugation: {
-              ...prev.wordData.conjugation,
-              [key]: value
-            }
-          }
-        }))}
+        onWordChange={(value) =>
+          setEditModal((prev) => ({
+            ...prev,
+            wordData: { ...prev.wordData, word: value },
+          }))
+        }
+        onTranslationChange={(value) =>
+          setEditModal((prev) => ({
+            ...prev,
+            wordData: { ...prev.wordData, meaning: value },
+          }))
+        }
+        onPronunciationChange={(value) =>
+          setEditModal((prev) => ({
+            ...prev,
+            wordData: { ...prev.wordData, pronunciation: value },
+          }))
+        }
+        onArticleChange={(value) =>
+          setEditModal((prev) => ({
+            ...prev,
+            wordData: { ...prev.wordData, article: value },
+          }))
+        }
+        onPluralChange={(value) =>
+          setEditModal((prev) => ({
+            ...prev,
+            wordData: { ...prev.wordData, plural: value },
+          }))
+        }
+        onPluralPronunciationChange={(value) =>
+          setEditModal((prev) => ({
+            ...prev,
+            wordData: { ...prev.wordData, pluralPronunciation: value },
+          }))
+        }
+        onIncorrectPluralsChange={(value) =>
+          setEditModal((prev) => ({
+            ...prev,
+            wordData: { ...prev.wordData, incorrectPlurals: value },
+          }))
+        }
+        onTypeChange={(value) =>
+          setEditModal((prev) => ({
+            ...prev,
+            wordData: { ...prev.wordData, type: value },
+          }))
+        }
+        onConjugationChange={(key, value) =>
+          setEditModal((prev) => ({
+            ...prev,
+            wordData: {
+              ...prev.wordData,
+              conjugation: {
+                ...prev.wordData.conjugation,
+                [key]: value,
+              },
+            },
+          }))
+        }
         onExamplesChange={(index, field, value, isNew) => {
           if (isNew) {
-            setEditModal(prev => ({
+            setEditModal((prev) => ({
               ...prev,
               wordData: {
                 ...prev.wordData,
                 examples: [
                   ...(prev.wordData.examples || []),
-                  { sentence: '', meaning: '', pronunciation: '' }
-                ]
-              }
+                  { sentence: "", meaning: "", pronunciation: "" },
+                ],
+              },
             }));
           } else {
             const newExamples = [...(editModal.wordData.examples || [])];
             newExamples[index] = { ...newExamples[index], [field]: value };
-            setEditModal(prev => ({
+            setEditModal((prev) => ({
               ...prev,
-              wordData: { ...prev.wordData, examples: newExamples }
+              wordData: { ...prev.wordData, examples: newExamples },
             }));
           }
         }}

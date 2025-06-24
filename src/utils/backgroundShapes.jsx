@@ -2,26 +2,14 @@
 import React from "react";
 
 const colors = [
-  "bg-blue-200",
-  "bg-green-200",
-  "bg-yellow-200",
-  "bg-pink-200",
-  "bg-purple-200",
-  "bg-indigo-200",
-  "bg-red-200",
-  "bg-orange-200",
-  "bg-teal-200",
-  "bg-cyan-200",
-  "bg-emerald-200",
-  "bg-lime-200",
-  "bg-amber-200",
-  "bg-rose-200",
-  "bg-violet-200",
-  "bg-sky-200",
-  "bg-slate-200",
-  "bg-gray-200",
-  "bg-stone-200",
-  "bg-zinc-200",
+  "bg-[#f3eddb]", // بيج فاتح
+  "bg-[#e2572c]", // برتقالي محمر
+  "bg-[#f0c02d]", // أصفر
+  "bg-[#00a7c4]", // سماوي
+  "bg-[#b64c9e]", // بنفسجي
+  "bg-[#273041]", // كحلي غامق
+  "bg-[#faaf42]", // برتقالي متوسط
+  "bg-[#e6e6e6]", // رمادي فاتح
 ];
 
 const shapeTypes = [

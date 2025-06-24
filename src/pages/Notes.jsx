@@ -205,7 +205,7 @@ const Notes = () => {
               <h1 className="text-3xl font-bold text-gray-800">الملاحظات</h1>
               <button
                 onClick={handleCreateNote}
-                className="flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 rounded-xl text-white font-medium transition-all hover:shadow-lg"
+                className="flex items-center gap-2 px-6 py-3 bg-[#ffbb00] hover:#ffba00 rounded-xl text-white font-medium transition-all hover:shadow-lg"
               >
                 <Plus size={20} />
                 ملاحظة جديدة
