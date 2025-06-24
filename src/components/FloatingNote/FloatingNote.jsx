@@ -10,7 +10,6 @@ const FloatingNote = () => {
   const [noteText, setNoteText] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  // منع التمرير عند فتح النافذة
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -18,7 +17,6 @@ const FloatingNote = () => {
       document.body.style.overflow = "auto";
     }
 
-    // تنظيف التأثير عند unmount
     return () => {
       document.body.style.overflow = "auto";
     };
@@ -62,7 +60,7 @@ const FloatingNote = () => {
       <div className="fixed bottom-6 left-6 z-50">
         <button
           onClick={toggleNote}
-          className="w-14 h-14 rounded-full bg-blue-500 hover:bg-blue-600 text-white shadow-lg flex items-center justify-center transition-all hover:shadow-xl hover:scale-105"
+          className="w-14 h-14 rounded-full bg-[#ffbb00] hover:bg-[#ffca3a] text-white shadow-lg flex items-center justify-center transition-all hover:shadow-xl hover:scale-105"
         >
           {isOpen ? <X size={24} /> : <StickyNote size={24} />}
         </button>
@@ -75,35 +73,32 @@ const FloatingNote = () => {
           onClick={toggleNote}
         >
           <div
-            className="bg-white w-full max-w-2xl h-[70vh] rounded-3xl shadow-2xl overflow-hidden relative border-2 animate-fade-in"
+            className="bg-white w-full max-w-2xl h-[70vh] rounded-2xl shadow-2xl overflow-hidden relative border border-gray-200 animate-fade-in"
             onClick={(e) => e.stopPropagation()}
           >
             {/* زرار الإغلاق */}
             <button
               onClick={toggleNote}
-              className="absolute top-6 right-6 z-10 p-3 hover:bg-gray-100 rounded-full transition-colors"
+              className="absolute top-4 left-4 z-10 p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
-              <X size={24} className="text-gray-500" />
+              <X size={20} className="text-gray-500" />
             </button>
 
             {/* عنوان الملاحظة السريعة */}
-            <div className="absolute top-6 left-6 z-10">
-              <h2 className="text-gray-700 text-lg font-semibold">
-                ملاحظة سريعة
-              </h2>
+            <div className="absolute top-4 right-4 z-10">
+              <h2 className="text-gray-700 text-xl font-bold">ملاحظة سريعة</h2>
             </div>
 
             {/* منطقة الكتابة */}
-            <div className="h-full p-8 pt-20 pb-20">
+            <div className="h-full p-6 pt-16 pb-20">
               <textarea
                 value={noteText}
                 onChange={(e) => setNoteText(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="ابدأ الكتابة... (Ctrl+Enter للحفظ)"
-                className="w-full h-full border-0 bg-transparent text-gray-800 placeholder-gray-400 focus:outline-none resize-none text-xl leading-loose"
+                placeholder="اكتب ملاحظتك هنا... (Ctrl+Enter للحفظ)"
+                className="w-full h-full border-0 bg-transparent text-gray-800 placeholder-gray-400 focus:outline-none resize-none text-lg leading-relaxed"
                 style={{
-                  fontFamily:
-                    "'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                  fontFamily: "'Tajawal', 'Cairo', sans-serif",
                   direction: "rtl",
                 }}
                 autoFocus
@@ -111,11 +106,18 @@ const FloatingNote = () => {
             </div>
 
             {/* أزرار الحفظ والإلغاء */}
-            <div className="absolute bottom-6 left-6 right-6 flex gap-3">
+            <div className="absolute bottom-4 right-4 left-4 flex gap-3">
+              <button
+                onClick={toggleNote}
+                disabled={isSaving}
+                className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-all font-semibold disabled:opacity-50"
+              >
+                إلغاء
+              </button>
               <button
                 onClick={handleAddNote}
                 disabled={!noteText.trim() || isSaving}
-                className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white rounded-xl transition-all text-base font-semibold disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 py-2 bg-[#21a121] hover:bg-[#1a8a1a] disabled:bg-gray-300 text-white rounded-lg transition-all text-base font-semibold disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isSaving ? (
                   <span>جاري الحفظ...</span>
@@ -125,13 +127,6 @@ const FloatingNote = () => {
                     <span>حفظ الملاحظة</span>
                   </>
                 )}
-              </button>
-              <button
-                onClick={toggleNote}
-                disabled={isSaving}
-                className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl transition-all font-semibold disabled:opacity-50"
-              >
-                إلغاء
               </button>
             </div>
           </div>
