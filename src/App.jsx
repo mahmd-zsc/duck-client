@@ -7,7 +7,8 @@ import AddLesson from "./pages/AddLesson";
 import LessonDetail from "./pages/LessonDetail";
 import Sidebar from "./components/sidebar/sidebar";
 import Questions from "./pages/Questions";
-import Notes from "./pages/Notes"; // ✅
+import Notes from "./pages/Notes";
+import QuizzesHome from "./pages/QuizzesHome"; // تمت إضافتها
 import FloatingNote from "./components/FloatingNote/FloatingNote";
 
 function App() {
@@ -26,8 +27,15 @@ function App() {
             <Route path="/add-lesson" element={<AddLesson />} />
             <Route path="/lesson/:id" element={<LessonDetail />} />
             <Route path="/questions/" element={<Questions />} />
-            {/* <Route path="/Quizzes/" element={<Quizzes />} /> */}
-            <Route path="/notes" element={<Notes />} /> {/* ✅ هنا */}
+            <Route path="/quizzes" element={<QuizzesHome />} />{" "}
+            {/* تمت إضافتها */}
+            <Route
+              path="/quizzes/review"
+              element={<Questions mode="review" />}
+            />
+            <Route path="/quizzes/hard" element={<Questions mode="hard" />} />
+            <Route path="/quizzes/all" element={<Questions mode="all" />} />
+            <Route path="/notes" element={<Notes />} />
           </Routes>
         </div>
         {!isQuestionPage && <Sidebar />}

@@ -1,5 +1,5 @@
 import React from "react";
-import { Home, BookOpen, StickyNote } from "lucide-react";
+import { Home, BookOpen, StickyNote, HelpCircle } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import logoImage from "../../../images/Lexi.png";
 
@@ -18,9 +18,14 @@ const Sidebar = () => {
       icon: BookOpen,
     },
     {
+      path: "/quizzes", // تمت إضافتها
+      label: "أسئلة الترجمة", // تمت إضافتها
+      icon: HelpCircle, // تمت إضافتها
+    },
+    {
       path: "/notes",
-      label: "الملاحظات", // ✅
-      icon: StickyNote, // ✅
+      label: "الملاحظات",
+      icon: StickyNote,
     },
   ];
 

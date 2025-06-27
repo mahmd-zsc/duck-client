@@ -53,6 +53,8 @@ export const deleteWordApi = async (wordId) => {
 
 // تحديث كلمة
 export const updateWordApi = async (wordId, updatedData) => {
+  console.log(updatedData.examples[0]);
+  console.log(wordId);
   try {
     const response = await axiosInstance.put(`/words/${wordId}`, updatedData);
     return response.data; // ممكن يرجع الكلمة بعد التحديث أو رسالة نجاح

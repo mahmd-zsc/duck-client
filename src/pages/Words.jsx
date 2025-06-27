@@ -12,8 +12,7 @@ import {
   setAllWords,
 } from "../redux/slices/wordSlice";
 import { generateShapes, renderShape } from "../utils/backgroundShapes";
-import { Info } from "lucide-react";
-// Import Components
+import { Info, Search } from "lucide-react"; // أضف Search هنا// Import Components
 import ActionButtons from "../components/wordPage/ActionButtons";
 import ReviewCard from "../components/wordPage/ReviewCard";
 import EditModal from "../components/wordPage/EditModal";
@@ -302,7 +301,15 @@ const Words = () => {
   );
 
   return (
-    <div className="relative flex flex-1 h-full p-4" dir="rtl">
+    <div
+      style={{
+        backgroundImage:
+          "linear-gradient(to left bottom, #fffcf3, #fffaeb, #fff8e4, #fff6dc, #fff4d5)",
+        minHeight: "calc(100vh - 82px)",
+      }}
+      className="relative flex flex-1 h-full p-4 "
+      dir="rtl"
+    >
       <div className="flex-1 flex flex-col w-full p-8 py-10 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           {shapes.map(renderShape)}

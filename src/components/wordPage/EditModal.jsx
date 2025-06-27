@@ -63,23 +63,26 @@ const EditModal = ({
   // منع التمرير في الصفحة الخارجية عند فتح المودال
   React.useEffect(() => {
     if (visible) {
-      // حفظ القيمة الحالية لـ overflow
       const originalOverflow = document.body.style.overflow;
-      // منع التمرير
       document.body.style.overflow = "hidden";
 
-      // إرجاع التمرير عند إغلاق المودال
       return () => {
         document.body.style.overflow = originalOverflow;
       };
     }
   }, [visible]);
 
-  if (!visible || !wordData) return null;
-
   const removeExample = (index) => {
     const newExamples = wordData.examples?.filter((_, i) => i !== index) || [];
     onExamplesChange(0, null, null, false, newExamples);
+  };
+
+  const handleSave = () => {
+    const cleanedData = {
+      ...wordData,
+      examples: wordData.examples?.map(({ _id, ...rest }) => rest) || [],
+    };
+    onSave(cleanedData);
   };
 
   const InputField = ({
@@ -119,6 +122,8 @@ const EditModal = ({
       </select>
     </InputField>
   );
+
+  if (!visible || !wordData) return null;
 
   return (
     <div
@@ -355,7 +360,7 @@ const EditModal = ({
         <div className="relative z-10 p-6 border-t border-gray-200/50 bg-white/50 flex-shrink-0">
           <div className="flex gap-4 w-full">
             <button
-              onClick={onSave}
+              onClick={handleSave}
               disabled={!wordData.word?.trim() || !wordData.meaning?.trim()}
               className="flex-1 min-h-[50px] bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-6 rounded-xl hover:from-blue-600 hover:to-purple-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 font-medium shadow-lg"
             >
