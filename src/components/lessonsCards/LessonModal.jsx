@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
-import { Info, X } from "lucide-react";
+import { Info, BookOpen, Eye } from "lucide-react";
+import { PiPottedPlantThin } from "react-icons/pi";
+import { CiTimer } from "react-icons/ci";
 
 function LessonModal({ lesson, onClose }) {
   const [groupSize, setGroupSize] = useState(5);
@@ -115,55 +117,31 @@ function LessonModal({ lesson, onClose }) {
       style={{ background: "rgba(0,0,0,0.4)" }}
       dir="rtl"
     >
-      <div className="w-[95%] sm:w-[500px] lg:w-[600px] max-h-[95vh] overflow-y-auto bg-white rounded-3xl shadow-2xl relative">
+      <div className="w-[95%] sm:w-[500px] lg:w-[650px] max-h-[95vh] overflow-y-auto bg-white rounded-3xl shadow-sm relative">
         {/* Background shapes */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
           {shapes.map(renderShape)}
         </div>
 
         {/* Modal content */}
-        <div className="relative z-10 p-6 sm:p-8">
-          {/* Close button */}
-          <button
-            onClick={onClose}
-            className="absolute left-4 top-4 w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors"
-          >
-            <X size={16} className="text-gray-500" />
-          </button>
+        <div className="relative z-10 p-8 py-10 flex flex-col h-full">
+       
 
-          {/* Header with info icon and title */}
-          <div className="flex items-center justify-between mb-8">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
             <div className="w-6 h-6 rounded-full border border-gray-400 flex items-center justify-center">
               <Info size={12} className="text-gray-500" />
             </div>
-            <div className="text-center flex-1 mx-4">
-              <h2 className="text-lg font-medium text-gray-800 mb-1">
-                {lesson.emoji} {lesson.title}
-              </h2>
-              <p className="text-sm text-gray-500 capitalize">
-                المستوى: {lesson.level}
-              </p>
-            </div>
-            <div className="w-6"></div> {/* Spacer for alignment */}
+            <h1 className="text-base font-normal text-gray-800">
+              {lesson.emoji} {lesson.title}
+            </h1>
           </div>
-
-          {/* Main counter section */}
-          <div className="text-center mb-8">
-            <div className="mb-3">
-              <span className="text-5xl sm:text-6xl font-light text-gray-900">
-                {lesson.wordsNumber}
-              </span>
-            </div>
-            <div className="text-sm text-gray-500">كلمة في هذا الدرس</div>
-          </div>
-
-        
 
           {/* Settings Section */}
           <div className="space-y-6 mb-8">
             {/* Group size selection */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label className="block text-sm font-normal text-gray-700 mb-3">
                 عدد الكلمات في كل مجموعة:
               </label>
               <select
@@ -184,7 +162,7 @@ function LessonModal({ lesson, onClose }) {
 
             {/* Group selection */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label className="block text-sm font-normal text-gray-700 mb-3">
                 اختر المجموعة ({totalGroups} مجموعة متاحة):
               </label>
               <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
@@ -192,7 +170,7 @@ function LessonModal({ lesson, onClose }) {
                   <button
                     key={i}
                     onClick={() => setSelectedGroup(i + 1)}
-                    className={`px-4 py-2 rounded-2xl border text-sm font-medium transition-colors ${
+                    className={`px-4 py-2 rounded-2xl border text-sm font-normal transition-colors ${
                       selectedGroup === i + 1
                         ? "bg-gray-800 text-white border-gray-800"
                         : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
@@ -205,17 +183,22 @@ function LessonModal({ lesson, onClose }) {
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <button
-              onClick={() => {
-                navigate(`/lesson/${lesson._id}`);
-                onClose();
-              }}
-              className="flex-1 bg-white border border-gray-300 rounded-2xl py-4 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
-            >
-              تفاصيل الدرس
-            </button>
+          {/* Main counter section */}
+          <div className="text-center mb-8">
+            <div className="mb-3">
+              <span className="text-6xl font-light text-gray-900">
+                {lesson.wordsNumber}
+              </span>
+            </div>
+            <div className="text-sm text-gray-500">
+              <div>كلمة في هذا الدرس</div>
+              <div className="capitalize mt-1">المستوى: {lesson.level}</div>
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* Learn button */}
             <button
               onClick={() => {
                 navigate(
@@ -223,9 +206,58 @@ function LessonModal({ lesson, onClose }) {
                 );
                 onClose();
               }}
-              className="flex-1 bg-gray-800 text-white rounded-2xl py-4 text-sm font-medium hover:bg-gray-700 transition-colors shadow-sm"
+              className="bg-white border border-gray-300 rounded-2xl py-4 text-gray-700 text-sm font-normal hover:bg-gray-50 transition-colors shadow-sm flex justify-center items-center gap-3"
             >
-              بدء المراجعة
+              <span>بدء التعلم</span>
+              <span>
+                <BookOpen size={20} color="blue" />
+              </span>
+            </button>
+
+            {/* Review button */}
+            <button
+              onClick={() => {
+                navigate(
+                  `/questions?lessonId=${lesson._id}&groupSize=${groupSize}&groupNumber=${selectedGroup}&mode=review`
+                );
+                onClose();
+              }}
+              className="bg-white border border-gray-300 rounded-2xl py-4 text-gray-700 text-sm font-normal hover:bg-gray-50 transition-colors shadow-sm flex justify-center items-center gap-3"
+            >
+              <span>مراجعة</span>
+              <span>
+                <PiPottedPlantThin size={20} color="green" />
+              </span>
+            </button>
+
+            {/* Quick Review button */}
+            <button
+              onClick={() => {
+                navigate(
+                  `/questions?lessonId=${lesson._id}&groupSize=${groupSize}&groupNumber=${selectedGroup}&mode=quick-review`
+                );
+                onClose();
+              }}
+              className="bg-white border border-gray-300 rounded-2xl py-4 text-gray-700 text-sm font-normal hover:bg-gray-50 transition-colors shadow-sm flex justify-center items-center gap-3"
+            >
+              <span>مراجعة سريعة</span>
+              <span>
+                <CiTimer size={20} color="red" />
+              </span>
+            </button>
+
+            {/* Lesson Details button */}
+            <button
+              onClick={() => {
+                navigate(`/lesson/${lesson._id}`);
+                onClose();
+              }}
+              className="bg-white border border-gray-300 rounded-2xl py-4 text-gray-700 text-sm font-normal hover:bg-gray-50 transition-colors shadow-sm flex justify-center items-center gap-3"
+            >
+              <span>تفاصيل الدرس</span>
+              <span>
+                <Eye size={20} color="gray" />
+              </span>
             </button>
           </div>
         </div>

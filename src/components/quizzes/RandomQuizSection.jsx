@@ -1,22 +1,8 @@
 import React, { useState } from "react";
-import {
-  Card,
-  Button,
-  InputNumber,
-  Select,
-  Typography,
-  Space,
-  Modal,
-} from "antd";
-import {
-  PlayCircleOutlined,
-  QuestionCircleOutlined,
-  FilterOutlined,
-  RetweetOutlined,
-} from "@ant-design/icons";
-
-const { Title, Text } = Typography;
-const { Option } = Select;
+import { PlayCircleOutlined } from "@ant-design/icons";
+import { Info } from "lucide-react";
+import { PiPottedPlantThin } from "react-icons/pi";
+import { CiTimer } from "react-icons/ci";
 
 const RandomQuizSection = ({
   totalQuizzesCount,
@@ -37,158 +23,187 @@ const RandomQuizSection = ({
     setIsModalVisible(false);
   };
 
-  const showQuizModal = () => {
-    setIsModalVisible(true);
+  // Handle escape key
+  const handleEscape = (e) => {
+    if (e.key === "Escape") setIsModalVisible(false);
+  };
+
+  React.useEffect(() => {
+    if (isModalVisible) {
+      document.addEventListener("keydown", handleEscape);
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "auto";
+    };
+  }, [isModalVisible]);
+
+  const handleNormalQuiz = () => {
+    onStartRandomQuiz({
+      count: 10,
+      rule: null,
+      difficulty: "all",
+      mode: "normal",
+    });
+  };
+
+  const handleQuickQuiz = () => {
+    onStartRandomQuiz({
+      count: 10,
+      rule: null,
+      difficulty: "all",
+      mode: "quick",
+    });
   };
 
   return (
     <>
-      <Card
-        className="mb-6 bg-gradient-to-br rounded-3xl from-gray-50 to-orange-50 border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer "
-        onClick={showQuizModal}
-        bodyStyle={{ padding: "40px" }}
-      >
-        <div className="text-center ">
-          {/* العداد في الأعلى */}
-          <div className="flex justify-end mb-4 ">
-            <div className="bg-white rounded-full w-8 h-8 flex items-center justify-center text-gray-400 border border-gray-200">
-              <QuestionCircleOutlined className="text-sm" />
+      <div className="flex flex-1 h-full" dir="rtl">
+        <div className="flex-1 flex flex-col w-full bg-white rounded-3xl shadow-sm p-8 py-10">
+          <div className="flex items-center justify-between mb-6">
+            <div className="w-6 h-6 rounded-full border border-gray-400 flex items-center justify-center">
+              <Info size={12} className="text-gray-500" />
             </div>
+            <h1 className="text-base font-normal text-gray-800">جاهز للحل</h1>
           </div>
 
-          {/* العنوان والرقم */}
-          <div className="mb-6">
-            <div className="text-4xl font-bold text-gray-800 mb-2">
-              {totalQuizzesCount}
+          <div className="flex flex-1 items-end justify-between">
+            <div className="text-center mb-16">
+              <div className="mb-3">
+                <span className="text-6xl font-light text-gray-900">
+                  {totalQuizzesCount ?? "0"}
+                </span>
+              </div>
+              <div className="text-sm text-gray-500">
+                <div>من الأسئلة والتمارين</div>
+              </div>
             </div>
-            <Text className="text-gray-600 text-base">
-              من الأسئلة والتمارين
-            </Text>
-          </div>
 
-          {/* الأزرار */}
-          <div className="flex gap-3 justify-center">
-            <Button
-              type="default"
-              size="large"
-              icon={<PlayCircleOutlined color="yellow" />}
-              className="px-8 py-2 h-12  border-gray-200 text-gray-700  rounded-full flex items-center gap-2"
-              onClick={(e) => {
-                e.stopPropagation();
-                showQuizModal();
-              }}
-            >
-              حل أسئلة
-            </Button>
-          </div>
+            <div className="flex flex-1 items-center justify-between gap-1">
+              <button
+                onClick={handleNormalQuiz}
+                disabled={totalQuizzesCount === 0}
+                className="w-full bg-white border border-gray-300 rounded-2xl py-4 text-gray-700 text-sm font-normal hover:bg-gray-50 transition-colors shadow-sm flex justify-center items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span>حل أسئلة</span>
+                <span>
+                  <PiPottedPlantThin size={20} color="green" />
+                </span>
+              </button>
 
-          {/* العنوان الرئيسي */}
-          <div className="mt-8">
-            <Title level={3} className="text-gray-800 mb-0 font-medium">
-              أسئلة الترجمة
-            </Title>
+              <button
+                onClick={() => setIsModalVisible(true)}
+                disabled={totalQuizzesCount === 0}
+                className="w-full bg-white border border-gray-300 rounded-2xl py-4 text-gray-700 text-sm font-normal hover:bg-gray-50 transition-colors shadow-sm flex justify-center items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span>إعدادات متقدمة</span>
+                <span>
+                  <CiTimer size={20} color="red" />
+                </span>
+              </button>
+            </div>
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* المودال للإعدادات */}
-      <Modal
-        title={
-          <div className="flex items-center gap-2">
-            <RetweetOutlined />
-            <span>إعدادات الكويز</span>
-          </div>
-        }
-        open={isModalVisible}
-        onOk={handleStartQuiz}
-        onCancel={() => setIsModalVisible(false)}
-        okText="ابدأ الكويز"
-        cancelText="إلغاء"
-        width={500}
-        centered
-        okButtonProps={{
-          size: "large",
-          icon: <PlayCircleOutlined />,
-          disabled: totalQuizzesCount === 0,
-        }}
-        cancelButtonProps={{ size: "large" }}
-      >
-        <div className="space-y-6 py-4">
-          {/* عدد الأسئلة */}
-          <div>
-            <Text strong className="block mb-2 text-gray-700">
-              عدد الأسئلة
-            </Text>
-            <InputNumber
-              min={1}
-              max={Math.min(totalQuizzesCount, 50)}
-              value={questionCount}
-              onChange={setQuestionCount}
-              className="w-full"
-              size="large"
-              placeholder="اختر عدد الأسئلة"
-            />
-            <Text type="secondary" className="text-sm mt-1 block">
-              الحد الأقصى: {Math.min(totalQuizzesCount, 50)} سؤال
-            </Text>
-          </div>
+      {isModalVisible && (
+        <div
+          onClick={(e) => {
+            if (e.target.classList.contains("overlay")) {
+              setIsModalVisible(false);
+            }
+          }}
+          className="overlay fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
+          style={{ background: "rgba(0,0,0,0.4)" }}
+          dir="rtl"
+        >
+          <div className="w-[95%] sm:w-[500px] lg:w-[650px] max-h-[95vh] overflow-y-auto bg-white rounded-3xl shadow-sm relative">
+            {/* Modal content */}
+            <div className="relative z-10 p-8 py-10 flex flex-col h-full">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="w-6 h-6 rounded-full border border-gray-400 flex items-center justify-center">
+                  <Info size={12} className="text-gray-500" />
+                </div>
+                <h1 className="text-base font-normal text-gray-800">
+                  إعدادات الأسئلة
+                </h1>
+              </div>
 
-          {/* تصفية حسب القاعدة */}
-          <div>
-            <Text strong className="block mb-2 text-gray-700">
-              القاعدة (اختياري)
-            </Text>
-            <Select
-              placeholder="اختر قاعدة محددة أو اتركها فارغة لكل القواعد"
-              allowClear
-              value={selectedRule}
-              onChange={setSelectedRule}
-              className="w-full"
-              size="large"
-              suffixIcon={<FilterOutlined />}
-            >
-              {rules.map((rule) => (
-                <Option key={rule.rule} value={rule.rule}>
-                  {rule.rule} ({rule.count} سؤال)
-                </Option>
-              ))}
-            </Select>
-          </div>
+              {/* Settings Section */}
+              <div className="space-y-6 mb-8">
+                {/* عدد الأسئلة */}
+                <div>
+                  <label className="block text-sm font-normal text-gray-700 mb-3">
+                    عدد الأسئلة:
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={Math.min(totalQuizzesCount, 50)}
+                    value={questionCount}
+                    onChange={(e) => setQuestionCount(+e.target.value)}
+                    className="w-full p-3 border border-gray-300 bg-white text-gray-700 rounded-2xl text-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                    placeholder="اختر عدد الأسئلة"
+                  />
+                  <div className="text-xs text-gray-500 mt-1">
+                    الحد الأقصى: {Math.min(totalQuizzesCount, 50)} سؤال
+                  </div>
+                </div>
 
-          {/* مستوى الصعوبة */}
-          <div>
-            <Text strong className="block mb-2 text-gray-700">
-              مستوى الصعوبة
-            </Text>
-            <Select
-              value={difficulty}
-              onChange={setDifficulty}
-              className="w-full"
-              size="large"
-            >
-              <Option value="all">كل المستويات</Option>
-              <Option value="easy">سهل</Option>
-              <Option value="medium">متوسط</Option>
-              <Option value="hard">صعب</Option>
-            </Select>
-          </div>
+                {/* تصفية حسب القاعدة */}
+                <div>
+                  <label className="block text-sm font-normal text-gray-700 mb-3">
+                    القاعدة (اختياري):
+                  </label>
+                  <select
+                    value={selectedRule || ""}
+                    onChange={(e) => setSelectedRule(e.target.value || null)}
+                    className="w-full p-3 border border-gray-300 bg-white text-gray-700 rounded-2xl text-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 cursor-pointer"
+                  >
+                    <option value="">كل القواعد</option>
+                    {rules.map((rule) => (
+                      <option key={rule.rule} value={rule.rule}>
+                        {rule.rule} ({rule.count} سؤال)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
 
-          {/* معلومات إضافية */}
-          <div className="bg-orange-50 p-4 rounded-lg border border-orange-100">
-            <Space direction="vertical" size="small">
-              <Text strong className="text-orange-800">
-                📊 إجمالي الأسئلة المتاحة: {totalQuizzesCount}
-              </Text>
-              <Text className="text-orange-600">
-                💡 ستظهر الأسئلة بترتيب عشوائي
-              </Text>
-              <Text className="text-orange-600">
-                ⏱️ لا يوجد حد زمني للإجابة
-              </Text>
-            </Space>
+              {/* Main counter section */}
+              <div className="text-center mb-8">
+                <div className="mb-3">
+                  <span className="text-6xl font-light text-gray-900">
+                    {totalQuizzesCount}
+                  </span>
+                </div>
+                <div className="text-sm text-gray-500">
+                  <div>إجمالي الأسئلة المتاحة</div>
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="w-full">
+                <button
+                  onClick={handleStartQuiz}
+                  disabled={totalQuizzesCount === 0}
+                  className="w-full bg-white border border-gray-300 rounded-2xl py-4 text-gray-700 text-sm font-normal hover:bg-gray-50 transition-colors shadow-sm flex justify-center items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span>ابدأ الكويز</span>
+                  <span>
+                    <PlayCircleOutlined style={{ color: "green" }} />
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </Modal>
+      )}
     </>
   );
 };

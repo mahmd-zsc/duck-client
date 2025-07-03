@@ -63,7 +63,7 @@ const Words = () => {
   }, [dispatch]);
 
   const shapes = useMemo(() => {
-    return generateShapes(60);
+    return generateShapes(0);
   }, []);
 
   // فلترة الكلمات حسب البحث
@@ -302,11 +302,11 @@ const Words = () => {
 
   return (
     <div
-      style={{
-        backgroundImage:
-          "linear-gradient(to left bottom, #fffcf3, #fffaeb, #fff8e4, #fff6dc, #fff4d5)",
-        minHeight: "calc(100vh - 82px)",
-      }}
+      // style={{
+      //   backgroundImage:
+      //     "linear-gradient(to left bottom, #fffcf3, #fffaeb, #fff8e4, #fff6dc, #fff4d5)",
+      //   minHeight: "calc(100vh - 82px)",
+      // }}
       className="relative flex flex-1 h-full p-4 "
       dir="rtl"
     >

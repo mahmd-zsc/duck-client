@@ -62,3 +62,26 @@ export const updateWordApi = async (wordId, updatedData) => {
     throw new Error(error.response?.data?.message || "فشل في تحديث الكلمة");
   }
 };
+
+
+// تحديد كلمات كصعبة (Batch mark as hard)
+export const markWordsAsHardApi = async (wordIds) => {
+  try {
+    const response = await axiosInstance.patch("/words/batch/mark-hard", { wordIds });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "فشل في تحديد الكلمات كصعبة");
+  }
+};
+
+// تحديد كلمات كسهلة (Batch mark as easy)
+export const markWordsAsEasyApi = async (wordIds) => {
+  try {
+    const response = await axiosInstance.patch("/words/batch/mark-easy", { wordIds });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "فشل في تحديد الكلمات كسهلة");
+  }
+};
+
+// ... باقي الكود الحالي ...
