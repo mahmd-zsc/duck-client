@@ -1,10 +1,12 @@
-import React, { useEffect, useState, useMemo, useRef } from "react";
+import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
   getAllWordsApi,
   deleteWordApi,
   updateWordApi,
+  markWordsAsImportantApi,
+  markWordsAsUnimportantApi,
 } from "../redux/apiCalls/wordApi";
 import {
   setWordIds,
@@ -31,6 +33,7 @@ const Words = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState("grid"); // "grid" or "list"
+  const [hasImportantSelected, setHasImportantSelected] = useState(false);
 
   // Review Card States
   const [reviewCard, setReviewCard] = useState({
@@ -66,6 +69,40 @@ const Words = () => {
     return generateShapes(0);
   }, []);
 
+  useEffect(() => {
+    const selected = Array.from(selectedWords);
+    const wordsSelected = words.filter((word) => selected.includes(word._id));
+    setHasImportantSelected(wordsSelected.some((word) => word.isImportant));
+  }, [selectedWords, words]);
+
+  const handleMarkImportant = async () => {
+    try {
+      await markWordsAsImportantApi(Array.from(selectedWords));
+      // تحديث الحالة المحلية
+      const updatedWords = words.map((word) =>
+        selectedWords.has(word._id) ? { ...word, isImportant: true } : word
+      );
+      dispatch(setAllWords(updatedWords));
+    } catch (error) {
+      console.error("Error marking as important:", error);
+      alert("حدث خطأ أثناء تحديد الكلمات كمهمة");
+    }
+  };
+
+  const handleMarkUnimportant = async () => {
+    try {
+      await markWordsAsUnimportantApi(Array.from(selectedWords));
+      // تحديث الحالة المحلية
+      const updatedWords = words.map((word) =>
+        selectedWords.has(word._id) ? { ...word, isImportant: false } : word
+      );
+      dispatch(setAllWords(updatedWords));
+    } catch (error) {
+      console.error("Error marking as unimportant:", error);
+      alert("حدث خطأ أثناء إزالة علامة الأهمية");
+    }
+  };
+
   // فلترة الكلمات حسب البحث
   const filteredWords = useMemo(() => {
     if (!searchTerm.trim()) return words;
@@ -81,13 +118,13 @@ const Words = () => {
     });
   }, [words, searchTerm]);
 
-  const handleWordClick = (wordId) => {
+  const handleWordClick = useCallback((wordId) => {
     setSelectedWords((prev) => {
       const newSet = new Set(prev);
       newSet.has(wordId) ? newSet.delete(wordId) : newSet.add(wordId);
       return newSet;
     });
-  };
+  }, []);
 
   // معالجة الضغط بالزر الأيمن
   const handleContextMenu = (e, wordData) => {
@@ -285,21 +322,6 @@ const Words = () => {
     </div>
   );
 
-  // List View Component
-  const ListView = () => (
-    <div className="space-y-3">
-      {filteredWords.map((wordObj) => (
-        <WordListItem
-          key={wordObj._id}
-          wordObj={wordObj}
-          isSelected={selectedWords.has(wordObj._id)}
-          onClick={handleWordClick}
-          onContextMenu={handleContextMenu}
-        />
-      ))}
-    </div>
-  );
-
   return (
     <div
       // style={{
@@ -327,8 +349,6 @@ const Words = () => {
           searchTerm={searchTerm}
           onSearchChange={handleSearchChange}
           onClearSearch={clearSearch}
-          viewMode={viewMode}
-          onToggleViewMode={toggleViewMode}
           filteredWordsCount={filteredWords.length}
           totalWordsCount={words.length}
         />
@@ -341,6 +361,9 @@ const Words = () => {
             onQuickReview={handleQuickReview}
             onReview={handleReview}
             onLearn={handleLearn}
+            onMarkImportant={handleMarkImportant}
+            onMarkUnimportant={handleMarkUnimportant}
+            hasImportantSelected={hasImportantSelected}
           />
         )}
 
@@ -379,6 +402,44 @@ const Words = () => {
           onClose={closeReviewCard}
           onLearn={handleReviewCardLearn}
           onReview={handleReviewCardReview}
+          onMarkImportant={async () => {
+            try {
+              await markWordsAsImportantApi([reviewCard.wordData._id]);
+              // تحديث الحالة المحلية
+              const updatedWords = words.map((word) =>
+                word._id === reviewCard.wordData._id
+                  ? { ...word, isImportant: true }
+                  : word
+              );
+              dispatch(setAllWords(updatedWords));
+              setReviewCard((prev) => ({
+                ...prev,
+                wordData: { ...prev.wordData, isImportant: true },
+              }));
+            } catch (error) {
+              console.error("Error marking as important:", error);
+              alert("حدث خطأ أثناء تحديد الكلمة كمهمة");
+            }
+          }}
+          onMarkUnimportant={async () => {
+            try {
+              await markWordsAsUnimportantApi([reviewCard.wordData._id]);
+              // تحديث الحالة المحلية
+              const updatedWords = words.map((word) =>
+                word._id === reviewCard.wordData._id
+                  ? { ...word, isImportant: false }
+                  : word
+              );
+              dispatch(setAllWords(updatedWords));
+              setReviewCard((prev) => ({
+                ...prev,
+                wordData: { ...prev.wordData, isImportant: false },
+              }));
+            } catch (error) {
+              console.error("Error marking as unimportant:", error);
+              alert("حدث خطأ أثناء إزالة علامة الأهمية");
+            }
+          }}
         />
       )}
 

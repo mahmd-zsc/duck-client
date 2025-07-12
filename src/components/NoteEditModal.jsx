@@ -30,7 +30,7 @@ const NoteEditModal = ({
   ];
 
   const getBackgroundColor = (index) => {
-    if (isCreating || index === undefined) return "bg-white";
+    if (isCreating || index === undefined) return "bg-white border-gray-300";
     return backgroundColors[index % backgroundColors.length];
   };
 
@@ -55,69 +55,76 @@ const NoteEditModal = ({
       onClick={onClose}
     >
       <div
-        className={`w-full max-w-4xl h-[90vh] rounded-3xl shadow-2xl overflow-hidden relative border-2 ${getBackgroundColor(
+        className={`w-full max-w-4xl h-[90vh] rounded-2xl shadow-2xl overflow-hidden relative border ${getBackgroundColor(
           noteIndex
         )}`}
         onClick={(e) => e.stopPropagation()}
         onKeyDown={handleKeyDown}
       >
-        {/* شريط الأدوات العلوي - التصميم الجديد */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200/50 bg-white/30 backdrop-blur-sm">
+        {/* شريط الأدوات العلوي - مع الأزرار */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white/80 backdrop-blur-sm">
           <div className="flex items-center gap-2">
-            {/* زر الحفظ الجديد */}
+            <h2 className="text-base font-normal text-gray-800">
+              {isCreating ? "إنشاء ملاحظة جديدة" : "تحرير الملاحظة"}
+            </h2>
+          </div>
+
+          {/* أزرار صغيرة في الهيدر */}
+          <div className="flex items-center gap-2">
+            {/* زر الحفظ */}
             <button
               onClick={handleSave}
               disabled={isSaving || !editContent?.trim()}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed rounded-xl text-white font-medium transition-all hover:shadow-md"
+              className="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="حفظ (Ctrl+S)"
             >
-              <span>{isSaving ? "جاري الحفظ..." : "حفظ التغييرات"}</span>
+              <Save size={14} className="text-gray-600" />
             </button>
 
-            {/* زر الحذف الجديد */}
+            {/* زر الحذف */}
             {!isCreating && selectedNote && (
               <button
                 onClick={onDelete}
-                className="flex items-center gap-2 px-4 py-2 bg-transparent hover:bg-red-50 text-red-500 hover:text-red-600 border border-red-300 hover:border-red-400 rounded-xl font-medium transition-all hover:shadow-md"
+                className="w-8 h-8 rounded-full border border-red-300 flex items-center justify-center hover:bg-red-50 transition-colors"
+                title="حذف الملاحظة"
               >
-                <span>حذف الملاحظة</span>
+                <Trash2 size={14} className="text-red-500" />
               </button>
             )}
-          </div>
 
-          {/* زر الإغلاق الجديد */}
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-xl transition-colors text-gray-500 hover:text-gray-700"
-          >
-            <X size={24} />
-          </button>
+            {/* زر الإغلاق */}
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center hover:bg-gray-100 transition-colors"
+              title="إغلاق"
+            >
+              <X size={14} className="text-gray-500" />
+            </button>
+          </div>
         </div>
 
-        {/* منطقة المحتوى */}
-        <div
-          className="h-full p-6 pb-8 flex flex-col"
-          style={{ height: "calc(100% - 80px)" }}
-        >
-          <div className="flex-1">
-            <textarea
-              value={editContent || ""}
-              onChange={(e) => setEditContent(e.target.value)}
-              placeholder="ابدأ الكتابة..."
-              className="w-full h-full border-0 bg-transparent text-gray-800 placeholder-gray-400 focus:outline-none resize-none text-xl leading-relaxed"
-              style={{
-                fontFamily:
-                  "'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-                direction: "rtl",
-              }}
-              autoFocus
-            />
-          </div>
+        {/* منطقة المحتوى - تركيز كامل على النص */}
+        <div className="h-full p-6" style={{ height: "calc(100% - 80px)" }}>
+          {/* Status Messages */}
+          {isSaving && (
+            <div className="mb-4 text-center text-blue-500 text-sm">
+              جاري الحفظ...
+            </div>
+          )}
 
-          <div className="mt-4 pt-4 border-t border-gray-200/50">
-            <p className="text-xs text-gray-400 text-center">
-              اضغط Ctrl+S للحفظ السريع
-            </p>
-          </div>
+          {/* منطقة النص - تأخذ كامل المساحة */}
+          <textarea
+            value={editContent || ""}
+            onChange={(e) => setEditContent(e.target.value)}
+            placeholder="ابدأ الكتابة..."
+            className="w-full h-full p-4 border-0 bg-transparent text-gray-700 text-sm leading-relaxed focus:outline-none resize-none"
+            style={{
+              fontFamily:
+                "'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+              direction: "rtl",
+            }}
+            autoFocus
+          />
         </div>
       </div>
     </div>

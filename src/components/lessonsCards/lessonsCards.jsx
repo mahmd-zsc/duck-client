@@ -24,24 +24,34 @@ function LessonsCards() {
     <div className="px-3 sm:px-6 md:px-8 lg:px-12 xl:px-20">
       {/* ---------- Header ---------- */}
       <header className="mt-6 flex flex-col md:flex-row-reverse items-center md:justify-between gap-6">
-        <div className="relative flex flex-row-reverse items-center  gap-2">
+        <div className="relative flex flex-row-reverse items-center gap-2">
           <img
             src={img}
             alt="صورة مكعب روبيك"
             className="h-36 sm:h-44 md:h-52 lg:h-60 2xl:h-72 select-none"
           />
-          <h1 className=" font-light  leading-tight text-2xl sm:text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl ">
+          <h1 className="font-light leading-tight text-2xl sm:text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl">
             الدروس
           </h1>
-          <div className=" absolute left-0 top-0 w-full h-full"></div>
         </div>
 
-        <Link to="/add-lesson" aria-label="إضافة درس">
-          <button className=" flex items-center justify-center rounded-3xl border border-gray-300 bg-white shadow-sm transition-transform duration-300 hover:scale-105 px-6 sm:px-7 md:px-8 py-3">
-            {/* <MdOutlineAddCircleOutline className="text-gray-600 " size={24}  /> */}
-            <CiCirclePlus className="text-gray-600 " size={24} />
-          </button>
-        </Link>
+        <div className="flex gap-3">
+          {/* زر إضافة درس */}
+          <Link to="/add-lesson" aria-label="إضافة درس">
+            <button className="flex items-center justify-center rounded-3xl border border-gray-300 bg-white shadow-sm transition-transform duration-300 hover:scale-105 px-6 sm:px-7 md:px-8 py-3">
+              <CiCirclePlus className="text-gray-600" size={24} />
+              <span className="mr-2 text-sm">إضافة درس</span>
+            </button>
+          </Link>
+
+          {/* زر إضافة مجموعة دروس (جديد) */}
+          <Link to="/add-lessonGroup" aria-label="إضافة مجموعة دروس">
+            <button className="flex items-center justify-center rounded-3xl border border-gray-300 bg-white shadow-sm transition-transform duration-300 hover:scale-105 px-6 sm:px-7 md:px-8 py-3">
+              <CiCirclePlus className="text-gray-600" size={24} />
+              <span className="mr-2 text-sm">إضافة مجموعة</span>
+            </button>
+          </Link>
+        </div>
       </header>
 
       {/* ---------- Content States ---------- */}

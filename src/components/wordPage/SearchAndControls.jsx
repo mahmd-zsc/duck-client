@@ -1,13 +1,14 @@
-// components/SearchAndControls.jsx
-import React from "react";
-import { Search, X, Grid3X3, List } from "lucide-react";
+// في ملف SearchAndControls.jsx
 
+// 1. احذف استيراد الأيقونات غير المستخدمة
+// import { Search, X, Grid3X3, List } from "lucide-react";
+import { Search, X } from "lucide-react";
+
+// 2. عدل المكون لإزالة أزرار التحكم في العرض
 const SearchAndControls = ({
   searchTerm,
   onSearchChange,
   onClearSearch,
-  viewMode,
-  onToggleViewMode,
   filteredWordsCount,
   totalWordsCount,
 }) => {
@@ -35,41 +36,14 @@ const SearchAndControls = ({
         )}
       </div>
 
-      {/* أزرار التحكم في العرض */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onToggleViewMode}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${
-              viewMode === "grid"
-                ? "bg-[#ffbb00] text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            <Grid3X3 size={14} />
-            شبكة
-          </button>
-          <button
-            onClick={onToggleViewMode}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${
-              viewMode === "list"
-                ? "bg-[#ffbb00] text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            <List size={14} />
-            قائمة
-          </button>
+      {/* عدل هذا الجزء لإظهار عدد النتائج فقط */}
+      {searchTerm && (
+        <div className="text-xs text-gray-500 text-left">
+          {filteredWordsCount === 0
+            ? "لم يتم العثور على كلمات مطابقة"
+            : `${filteredWordsCount} كلمة من أصل ${totalWordsCount}`}
         </div>
-
-        {searchTerm && (
-          <div className="text-xs text-gray-500">
-            {filteredWordsCount === 0
-              ? "لم يتم العثور على كلمات مطابقة"
-              : `${filteredWordsCount} كلمة من أصل ${totalWordsCount}`}
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 };

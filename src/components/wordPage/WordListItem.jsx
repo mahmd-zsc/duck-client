@@ -112,6 +112,17 @@ const WordListItem = ({ wordObj, isSelected, onClick, onContextMenu }) => {
                   </div>
                 </div>
               )}
+              {wordObj.isImportant && (
+                <div
+                  className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                    isSelected
+                      ? "bg-white/20 text-white"
+                      : "bg-yellow-500 text-white"
+                  }`}
+                >
+                  <Star size={12} />
+                </div>
+              )}
             </div>
           </div>
         </div>

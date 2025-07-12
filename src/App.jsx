@@ -10,6 +10,7 @@ import Questions from "./pages/Questions";
 import Notes from "./pages/Notes";
 import QuizzesHome from "./pages/QuizzesHome"; // تمت إضافتها
 import FloatingNote from "./components/FloatingNote/FloatingNote";
+import AddLessonGroup from "./pages/AddLessonGroup";
 
 function App() {
   const location = useLocation();
@@ -25,6 +26,7 @@ function App() {
             <Route path="/words" element={<Words />} />
             <Route path="/solution" element={<Solution />} />
             <Route path="/add-lesson" element={<AddLesson />} />
+            <Route path="/add-lessonGroup" element={<AddLessonGroup />} />
             <Route path="/lesson/:id" element={<LessonDetail />} />
             <Route path="/questions/" element={<Questions />} />
             <Route path="/quizzes" element={<QuizzesHome />} />{" "}

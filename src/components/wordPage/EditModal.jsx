@@ -1,47 +1,6 @@
 import React, { useMemo } from "react";
 import { X, Save, RotateCcw, Plus, Trash2 } from "lucide-react";
 
-// Generate background shapes similar to Words page
-const generateShapes = (count) => {
-  const shapes = [];
-  for (let i = 0; i < count; i++) {
-    shapes.push({
-      id: i,
-      type: Math.random() > 0.5 ? "circle" : "square",
-      size: Math.random() * 60 + 20,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      opacity: Math.random() * 0.05 + 0.02,
-      color: `hsl(${Math.random() * 360}, 50%, 60%)`,
-      rotation: Math.random() * 360,
-    });
-  }
-  return shapes;
-};
-
-const renderShape = (shape) => {
-  const style = {
-    position: "absolute",
-    left: `${shape.x}%`,
-    top: `${shape.y}%`,
-    width: `${shape.size}px`,
-    height: `${shape.size}px`,
-    opacity: shape.opacity,
-    backgroundColor: shape.color,
-    transform: `rotate(${shape.rotation}deg)`,
-    pointerEvents: "none",
-    zIndex: 1,
-  };
-
-  if (shape.type === "circle") {
-    style.borderRadius = "50%";
-  } else {
-    style.borderRadius = "8px";
-  }
-
-  return <div key={shape.id} style={style} />;
-};
-
 const EditModal = ({
   visible,
   wordData,
@@ -58,8 +17,6 @@ const EditModal = ({
   onSave,
   onCancel,
 }) => {
-  const shapes = useMemo(() => generateShapes(30), [visible]);
-
   // منع التمرير في الصفحة الخارجية عند فتح المودال
   React.useEffect(() => {
     if (visible) {
@@ -93,14 +50,16 @@ const EditModal = ({
     type = "text",
     children,
   }) => (
-    <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
+    <div>
+      <label className="block text-sm font-normal text-gray-700 mb-2">
+        {label}
+      </label>
       {children || (
         <input
           type={type}
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+          className="w-full p-3 border border-gray-300 bg-white text-gray-700 rounded-2xl text-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200"
           placeholder={placeholder}
         />
       )}
@@ -112,7 +71,7 @@ const EditModal = ({
       <select
         value={value || ""}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 bg-white/70 backdrop-blur-sm"
+        className="w-full p-3 border border-gray-300 bg-white text-gray-700 rounded-2xl text-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 cursor-pointer"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
@@ -133,42 +92,33 @@ const EditModal = ({
       style={{ touchAction: "none" }}
     >
       <div
-        className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border border-white/20 flex flex-col"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border border-gray-300 flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Background Shapes */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {shapes.map(renderShape)}
-        </div>
-
         {/* Header */}
-        <div className="relative z-10 flex items-center justify-between p-6 border-b border-gray-200/50 bg-white/50 flex-shrink-0">
-          <button
-            onClick={onCancel}
-            className="p-2 hover:bg-gray-100/50 rounded-xl transition-colors"
-          >
-            <X size={20} className="text-gray-500" />
-          </button>
-          <h2 className="text-xl font-semibold text-gray-800">تعديل الكلمة</h2>
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-            <Save size={16} className="text-white" />
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-white flex-shrink-0">
+          <div className="w-6 h-6 rounded-full border border-gray-400 flex items-center justify-center">
+            <X
+              size={12}
+              className="text-gray-500 cursor-pointer"
+              onClick={onCancel}
+            />
+          </div>
+          <h1 className="text-base font-normal text-gray-800">تعديل الكلمة</h1>
+          <div className="w-6 h-6 rounded-full border border-gray-400 flex items-center justify-center">
+            <Save size={12} className="text-gray-500" />
           </div>
         </div>
 
         {/* Content */}
         <div
-          className="relative z-10 flex-1 overflow-y-auto"
+          className="flex-1 overflow-y-auto p-10"
           style={{ maxHeight: "calc(90vh - 180px)" }}
         >
-          <div className="p-6 space-y-8">
+          <div className="space-y-6">
             {/* Basic Information */}
-            <div className="space-y-6">
-              <h3 className="text-lg font-medium text-gray-800 flex items-center gap-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                المعلومات الأساسية
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InputField
                   label="الكلمة الألمانية"
                   value={wordData.word}
@@ -209,13 +159,8 @@ const EditModal = ({
 
             {/* Noun Specific Fields */}
             {wordData.type === "noun" && (
-              <div className="space-y-6">
-                <h3 className="text-lg font-medium text-gray-800 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  معلومات الاسم
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <SelectField
                     label="أداة التعريف"
                     value={wordData.article}
@@ -261,12 +206,7 @@ const EditModal = ({
 
             {/* Verb Specific Fields */}
             {wordData.type === "verb" && (
-              <div className="space-y-6">
-                <h3 className="text-lg font-medium text-gray-800 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                  تصريف الفعل
-                </h3>
-
+              <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {Object.entries(wordData.conjugation || {}).map(
                     ([key, value]) => (
@@ -286,12 +226,11 @@ const EditModal = ({
             )}
 
             {/* Examples Section */}
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium text-gray-800 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                <label className="block text-sm font-normal text-gray-700">
                   الأمثلة
-                </h3>
+                </label>
                 <button
                   onClick={() =>
                     onExamplesChange(
@@ -301,7 +240,7 @@ const EditModal = ({
                       true
                     )
                   }
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors"
+                  className="bg-white border border-gray-300 rounded-2xl py-2 px-4 text-gray-700 text-sm font-normal hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2"
                 >
                   <Plus size={16} />
                   إضافة مثال
@@ -312,7 +251,7 @@ const EditModal = ({
                 {wordData.examples?.map((example, index) => (
                   <div
                     key={index}
-                    className="p-4 bg-gray-50/50 rounded-xl space-y-4 relative"
+                    className="p-4 border border-gray-300 bg-white rounded-2xl space-y-4 relative"
                   >
                     <button
                       onClick={() => removeExample(index)}
@@ -357,22 +296,22 @@ const EditModal = ({
         </div>
 
         {/* Footer */}
-        <div className="relative z-10 p-6 border-t border-gray-200/50 bg-white/50 flex-shrink-0">
+        <div className="p-6 border-t border-gray-200 bg-white flex-shrink-0">
           <div className="flex gap-4 w-full">
             <button
               onClick={handleSave}
               disabled={!wordData.word?.trim() || !wordData.meaning?.trim()}
-              className="flex-1 min-h-[50px] bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-6 rounded-xl hover:from-blue-600 hover:to-purple-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 font-medium shadow-lg"
+              className="flex-1 bg-white border border-gray-300 rounded-2xl py-4 text-gray-700 text-sm font-normal hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              <Save size={18} />
+              <Save size={16} />
               حفظ التعديلات
             </button>
 
             <button
               onClick={onCancel}
-              className="flex-1 min-h-[50px] bg-gray-100 text-gray-700 py-3 px-6 rounded-xl hover:bg-gray-200 transition-all duration-200 flex items-center justify-center gap-2 font-medium"
+              className="flex-1 bg-white border border-gray-300 rounded-2xl py-4 text-gray-700 text-sm font-normal hover:bg-gray-50 transition-colors shadow-sm flex items-center justify-center gap-2"
             >
-              <RotateCcw size={18} />
+              <RotateCcw size={16} />
               إلغاء
             </button>
           </div>

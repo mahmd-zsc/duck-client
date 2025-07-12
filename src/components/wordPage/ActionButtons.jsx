@@ -1,6 +1,5 @@
-// components/ActionButtons.jsx
 import React from "react";
-import { X, Zap, Eye, BookOpen } from "lucide-react";
+import { X, Zap, Eye, BookOpen, Star, StarOff } from "lucide-react";
 
 const ActionButtons = ({
   selectedCount,
@@ -8,6 +7,9 @@ const ActionButtons = ({
   onQuickReview,
   onReview,
   onLearn,
+  onMarkImportant,
+  onMarkUnimportant,
+  hasImportantSelected,
 }) => {
   if (selectedCount === 0) return null;
 
@@ -19,6 +21,23 @@ const ActionButtons = ({
       >
         <X size={14} /> إلغاء ({selectedCount})
       </button>
+
+      {hasImportantSelected ? (
+        <button
+          onClick={onMarkUnimportant}
+          className="flex items-center gap-2 px-3 py-2 bg-yellow-100 hover:bg-yellow-200 rounded-lg text-yellow-800 text-sm"
+        >
+          <StarOff size={14} /> إزالة الأهمية
+        </button>
+      ) : (
+        <button
+          onClick={onMarkImportant}
+          className="flex items-center gap-2 px-3 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-lg text-white text-sm"
+        >
+          <Star size={14} /> تحديد كمهمة
+        </button>
+      )}
+
       <button
         onClick={onQuickReview}
         className="flex items-center gap-2 px-3 py-2 bg-orange-500 hover:bg-orange-600 rounded-lg text-white text-sm"

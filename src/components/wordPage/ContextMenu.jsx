@@ -1,8 +1,18 @@
 // components/ContextMenu.jsx
 import React, { useRef, useEffect } from "react";
-import { Edit3, Trash2 } from "lucide-react";
+import { Edit3, Trash2, Star, StarOff } from "lucide-react";
 
-const ContextMenu = ({ visible, x, y, onEdit, onDelete, onClose }) => {
+const ContextMenu = ({
+  visible,
+  x,
+  y,
+  onEdit,
+  onDelete,
+  onClose,
+  onMarkImportant,
+  onMarkUnimportant,
+  isImportant,
+}) => {
   const contextMenuRef = useRef(null);
 
   useEffect(() => {
@@ -43,6 +53,15 @@ const ContextMenu = ({ visible, x, y, onEdit, onDelete, onClose }) => {
       }}
     >
       <ul className="text-sm">
+        <li>
+          <button
+            onClick={isImportant ? onMarkUnimportant : onMarkImportant}
+            className="w-full px-4 py-2 text-right hover:bg-yellow-50 transition-colors flex items-center gap-2 text-yellow-600"
+          >
+            {isImportant ? <StarOff size={14} /> : <Star size={14} />}
+            {isImportant ? "إزالة الأهمية" : "تحديد كمهمة"}
+          </button>
+        </li>
         <li>
           <button
             onClick={onEdit}

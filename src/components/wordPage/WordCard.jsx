@@ -1,6 +1,6 @@
 // components/WordCard.jsx
 import React from "react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Star } from "lucide-react";
 
 const WordCard = ({ wordObj, isSelected, onClick, onContextMenu }) => {
   return (
@@ -31,6 +31,19 @@ const WordCard = ({ wordObj, isSelected, onClick, onContextMenu }) => {
             }`}
           >
             <AlertTriangle size={10} />
+          </div>
+        </div>
+      )}
+      {wordObj.isImportant && (
+        <div className="absolute -top-1 -left-1">
+          <div
+            className={`w-4 h-4 rounded-full flex items-center justify-center ${
+              isSelected
+                ? "bg-white text-yellow-500"
+                : "bg-yellow-500 text-white"
+            }`}
+          >
+            <Star size={10} />
           </div>
         </div>
       )}

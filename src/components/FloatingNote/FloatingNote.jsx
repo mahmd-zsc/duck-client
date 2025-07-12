@@ -60,7 +60,7 @@ const FloatingNote = () => {
       <div className="fixed bottom-6 left-6 z-50">
         <button
           onClick={toggleNote}
-          className="w-14 h-14 rounded-full bg-[#ffbb00] hover:bg-[#ffca3a] text-white shadow-lg flex items-center justify-center transition-all hover:shadow-xl hover:scale-105"
+          className="w-14 h-14 rounded-full bg-amber-400 hover:bg-amber-500 text-white shadow-lg flex items-center justify-center transition-all hover:shadow-xl hover:scale-105"
         >
           {isOpen ? <X size={24} /> : <StickyNote size={24} />}
         </button>
@@ -75,55 +75,60 @@ const FloatingNote = () => {
           <div
             className="bg-white w-full max-w-2xl h-[70vh] rounded-2xl shadow-2xl overflow-hidden relative border border-gray-200 animate-fade-in"
             onClick={(e) => e.stopPropagation()}
+            dir="rtl"
           >
-            {/* زرار الإغلاق */}
-            <button
-              onClick={toggleNote}
-              className="absolute top-4 left-4 z-10 p-2 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <X size={20} className="text-gray-500" />
-            </button>
-
-            {/* عنوان الملاحظة السريعة */}
-            <div className="absolute top-4 right-4 z-10">
-              <h2 className="text-gray-700 text-xl font-bold">ملاحظة سريعة</h2>
+            {/* Header with icon and title */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200/50">
+              <div className="w-6 h-6 rounded-full border border-gray-400 flex items-center justify-center">
+                <StickyNote size={12} className="text-gray-500" />
+              </div>
+              <h2 className="text-base font-normal text-gray-800">
+                ملاحظة سريعة
+              </h2>
+              <button
+                onClick={toggleNote}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X size={20} className="text-gray-500" />
+              </button>
             </div>
 
             {/* منطقة الكتابة */}
-            <div className="h-full p-6 pt-16 pb-20">
+            <div className="flex-1 p-6">
               <textarea
                 value={noteText}
                 onChange={(e) => setNoteText(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="اكتب ملاحظتك هنا... (Ctrl+Enter للحفظ)"
-                className="w-full h-full border-0 bg-transparent text-gray-800 placeholder-gray-400 focus:outline-none resize-none text-lg leading-relaxed"
+                className="w-full h-full border-0 bg-transparent text-gray-800 placeholder-gray-400 focus:outline-none resize-none text-sm leading-relaxed"
                 style={{
                   fontFamily: "'Tajawal', 'Cairo', sans-serif",
                   direction: "rtl",
+                  minHeight: "400px",
                 }}
                 autoFocus
               />
             </div>
 
             {/* أزرار الحفظ والإلغاء */}
-            <div className="absolute bottom-4 right-4 left-4 flex gap-3">
+            <div className="p-6 pt-0 flex gap-3">
               <button
                 onClick={toggleNote}
                 disabled={isSaving}
-                className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-all font-semibold disabled:opacity-50"
+                className="px-6 py-3 bg-white border border-gray-300 rounded-2xl text-gray-700 text-sm font-normal hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-50"
               >
                 إلغاء
               </button>
               <button
                 onClick={handleAddNote}
                 disabled={!noteText.trim() || isSaving}
-                className="flex-1 py-2 bg-[#21a121] hover:bg-[#1a8a1a] disabled:bg-gray-300 text-white rounded-lg transition-all text-base font-semibold disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 py-3 bg-white border border-gray-300 rounded-2xl text-gray-700 text-sm font-normal hover:bg-gray-50 transition-colors shadow-sm disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isSaving ? (
                   <span>جاري الحفظ...</span>
                 ) : (
                   <>
-                    <Plus size={18} />
+                    <Plus size={16} />
                     <span>حفظ الملاحظة</span>
                   </>
                 )}

@@ -4,8 +4,10 @@ const initialState = {
   words: [],
   wordIds: [],
   reviewCount: null,
-  hardWordsCount: null, // ✅ أضف دي
+  hardWordsCount: null,
+  importantWordsCount: null, // أضف هذا
   allWords: [],
+  importantWords: [], // أضف هذا
 };
 
 const wordSlice = createSlice({
@@ -38,8 +40,14 @@ const wordSlice = createSlice({
     setHardWordsCount: (state, action) => {
       state.hardWordsCount = action.payload;
     },
+    setImportantWordsCount: (state, action) => { // أضف هذا
+      state.importantWordsCount = action.payload;
+    },
     setAllWords: (state, action) => {
       state.allWords = action.payload;
+    },
+    setImportantWords: (state, action) => { // أضف هذا
+      state.importantWords = action.payload;
     },
   },
 });
@@ -53,7 +61,9 @@ export const {
   clearWordIds,
   setReviewCount,
   setHardWordsCount,
+  setImportantWordsCount, // أضف هذا
   setAllWords,
+  setImportantWords, // أضف هذا
 } = wordSlice.actions;
 
 export default wordSlice.reducer;

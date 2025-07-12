@@ -45,10 +45,6 @@ const Notes = () => {
     }
   }, [dispatch, notes.length, loading]);
 
-  const shapes = useMemo(() => {
-    return generateShapes(10);
-  }, []);
-
   const handleNoteClick = (note, index) => {
     setSelectedNote(note);
     setSelectedNoteIndex(index);
@@ -158,13 +154,13 @@ const Notes = () => {
         <div
           key={note._id}
           onClick={() => handleNoteClick(note, index)}
-          className={`group border rounded-xl p-4 transition-all duration-200 cursor-pointer hover:shadow-md hover:scale-105 ${getBackgroundColor(
+          className={`group border rounded-2xl p-4 transition-all duration-200 cursor-pointer hover:shadow-sm ${getBackgroundColor(
             index
           )}`}
         >
           <div className="flex justify-between items-start mb-3">
             <div className="flex-1">
-              <p className="text-base text-gray-800 line-clamp-3 mb-2">
+              <p className="text-sm text-gray-700 line-clamp-3 mb-2">
                 {note.content || "ملاحظة فارغة"}
               </p>
             </div>
@@ -193,50 +189,55 @@ const Notes = () => {
 
   return (
     <>
-      <div className="relative flex flex-1 h-full p-4" dir="rtl">
-        <div className="flex-1 flex flex-col w-full p-8 py-10 relative overflow-hidden">
-          <div className="absolute inset-0 pointer-events-none">
-            {shapes.map(renderShape)}
-          </div>
-
-          {/* العنوان وأزرار التحكم */}
-          <div className="mb-6 relative z-10">
-            <div className="flex items-center justify-between mb-4">
-              <h1 className="text-3xl font-bold text-gray-800">الملاحظات</h1>
-              <button
-                onClick={handleCreateNote}
-                className="flex items-center gap-2 px-6 py-3 bg-[#ffbb00] hover:#ffba00 rounded-xl text-white font-medium transition-all hover:shadow-lg"
-              >
-                <Plus size={20} />
-                ملاحظة جديدة
-              </button>
+      <div className="flex flex-1" dir="rtl">
+        <div className="flex-1 flex flex-col w-full p-10">
+          {/* Header with icon and title */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="w-6 h-6 rounded-full border border-gray-400 flex items-center justify-center">
+              <BookOpen size={12} className="text-gray-500" />
             </div>
-            <p className="text-gray-600">
-              {notes.length > 0 ? `${notes.length} ملاحظة` : "لا توجد ملاحظات"}
-            </p>
+            <h1 className="text-base font-normal text-gray-800">الملاحظات</h1>
           </div>
 
-          <div className="flex flex-1 flex-col relative z-10">
-            <div className="flex-1 mb-8">
+          {/* Status Messages */}
+          {loading && (
+            <div className="mb-4 text-center text-blue-500 text-sm">
+              جاري تحميل الملاحظات...
+            </div>
+          )}
+
+          <div className="flex flex-1 flex-col justify-between">
+            {/* Notes Section */}
+            <div className="flex-1">
               {notes.length === 0 ? (
                 <div className="text-center py-16">
-                  <BookOpen size={64} className="mx-auto text-gray-300 mb-6" />
-                  <h3 className="text-xl font-semibold text-gray-500 mb-2">
+                  <BookOpen size={48} className="mx-auto text-gray-300 mb-4" />
+                  <h3 className="text-lg font-normal text-gray-500 mb-2">
                     لا توجد ملاحظات بعد
                   </h3>
-                  <p className="text-gray-400 text-base mb-6 max-w-md mx-auto">
+                  <p className="text-gray-400 text-sm mb-6 max-w-md mx-auto">
                     ابدأ بإنشاء ملاحظتك الأولى لحفظ أفكارك ومعلوماتك المهمة
                   </p>
-                  <button
-                    onClick={handleCreateNote}
-                    className="px-6 py-3 bg-blue-500 hover:bg-blue-600 rounded-xl text-white font-medium transition-all"
-                  >
-                    إنشاء ملاحظة جديدة
-                  </button>
                 </div>
               ) : (
-                <GridView />
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-600 mb-4">
+                    {notes.length} ملاحظة
+                  </p>
+                  <GridView />
+                </div>
               )}
+            </div>
+
+            {/* Add Note Button */}
+            <div className="mt-8">
+              <button
+                onClick={handleCreateNote}
+                className="w-full bg-white border border-gray-300 rounded-2xl py-4 text-gray-700 text-sm font-normal hover:bg-gray-50 transition-colors shadow-sm flex items-center justify-center gap-2"
+              >
+                <Plus size={16} />
+                إضافة ملاحظة جديدة
+              </button>
             </div>
           </div>
         </div>
