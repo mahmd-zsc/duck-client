@@ -10,7 +10,7 @@ export default function QuizComplete({ quizzesList, hardCandidates, mode }) {
   const navigate = useNavigate();
 
   function handlerClick() {
-    navigate("/");
+    navigate(-1);
 
     const wordIds = quizzesList.map((q) => q._id).filter(Boolean);
     const hardWordIds = [...new Set(hardCandidates?.filter(Boolean))];

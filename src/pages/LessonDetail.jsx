@@ -16,11 +16,18 @@ import {
   BookOpen,
   Edit3,
   Search,
+  Star,
+  StarOff,
 } from "lucide-react";
 import { generateShapes, renderShape } from "../utils/backgroundShapes";
 import ReviewCard from "../components/wordPage/ReviewCard";
 import EditModal from "../components/wordPage/EditModal";
-import { deleteWordApi, updateWordApi } from "../redux/apiCalls/wordApi";
+import {
+  deleteWordApi,
+  updateWordApi,
+  markWordsAsImportantApi,
+  markWordsAsUnimportantApi,
+} from "../redux/apiCalls/wordApi";
 
 function LessonDetail() {
   const { id } = useParams();
@@ -29,6 +36,7 @@ function LessonDetail() {
   const [showModal, setShowModal] = useState(false);
   const [selectedWords, setSelectedWords] = useState(new Set());
   const [searchTerm, setSearchTerm] = useState("");
+  const [hasImportantSelected, setHasImportantSelected] = useState(false);
 
   // Review Card States
   const [reviewCard, setReviewCard] = useState({
@@ -55,6 +63,14 @@ function LessonDetail() {
     return generateShapes(40);
   }, []);
 
+  useEffect(() => {
+    const selected = Array.from(selectedWords);
+    const wordsSelected = selectedLesson?.words?.filter((word) =>
+      selected.includes(word._id)
+    );
+    setHasImportantSelected(wordsSelected?.some((word) => word.isImportant));
+  }, [selectedWords, selectedLesson?.words]);
+
   // فلترة الكلمات حسب البحث
   const filteredWords = useMemo(() => {
     if (!selectedLesson?.words) return [];
@@ -77,6 +93,26 @@ function LessonDetail() {
       newSet.has(wordId) ? newSet.delete(wordId) : newSet.add(wordId);
       return newSet;
     });
+  };
+
+  const handleMarkImportant = async () => {
+    try {
+      await markWordsAsImportantApi(Array.from(selectedWords));
+      dispatch(getLessonById(id)); // هنا المشكلة
+    } catch (error) {
+      console.error("Error marking as important:", error);
+      alert("حدث خطأ أثناء تحديد الكلمات كمهمة");
+    }
+  };
+
+  const handleMarkUnimportant = async () => {
+    try {
+      await markWordsAsUnimportantApi(Array.from(selectedWords));
+      dispatch(getLessonById(id));
+    } catch (error) {
+      console.error("Error marking as unimportant:", error);
+      alert("حدث خطأ أثناء إزالة علامة الأهمية");
+    }
   };
 
   // معالجة الضغط بالزر الأيمن
@@ -293,6 +329,23 @@ function LessonDetail() {
             >
               <X size={14} /> إلغاء ({selectedWords.size})
             </button>
+
+            {hasImportantSelected ? (
+              <button
+                onClick={handleMarkUnimportant}
+                className="flex items-center gap-2 px-3 py-2 bg-yellow-100 hover:bg-yellow-200 rounded-lg text-yellow-800 text-sm"
+              >
+                <StarOff size={14} /> إزالة الأهمية
+              </button>
+            ) : (
+              <button
+                onClick={handleMarkImportant}
+                className="flex items-center gap-2 px-3 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-lg text-white text-sm"
+              >
+                <Star size={14} /> تحديد كمهمة
+              </button>
+            )}
+
             <button
               onClick={handleQuickReview}
               className="flex items-center gap-2 px-3 py-2 bg-orange-500 hover:bg-orange-600 rounded-lg text-white text-sm"
@@ -322,7 +375,7 @@ function LessonDetail() {
                   {filteredWords.length}
                 </span>
               </div>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-500 relative">
                 <div>
                   {searchTerm ? "كلمة في نتائج البحث" : "كلمة في هذا الدرس"}
                 </div>
@@ -332,7 +385,7 @@ function LessonDetail() {
                   </div>
                 )}
                 {selectedWords.size > 0 && (
-                  <div className="mt-1 text-blue-600 font-medium">
+                  <div className="mt-1 text-blue-600 font-medium absolute left-1/2 -translate-x-1/2 ">
                     {selectedWords.size} كلمة محددة
                   </div>
                 )}
@@ -399,6 +452,20 @@ function LessonDetail() {
                           }`}
                         >
                           <AlertTriangle size={10} />
+                        </div>
+                      </div>
+                    )}
+
+                    {wordObj.isImportant && (
+                      <div className="absolute -top-1 -left-1">
+                        <div
+                          className={`w-4 h-4 rounded-full flex items-center justify-center ${
+                            selectedWords.has(wordObj._id)
+                              ? "bg-white text-yellow-500"
+                              : "bg-yellow-500 text-white"
+                          }`}
+                        >
+                          <Star size={10} />
                         </div>
                       </div>
                     )}
@@ -472,6 +539,33 @@ function LessonDetail() {
             onClose={closeReviewCard}
             onLearn={handleReviewCardLearn}
             onReview={handleReviewCardReview}
+            onMarkImportant={async () => {
+              try {
+                await markWordsAsImportantApi([reviewCard.wordData._id]);
+                dispatch(getLessonById(id));
+                setReviewCard((prev) => ({
+                  ...prev,
+                  wordData: { ...prev.wordData, isImportant: true },
+                }));
+              } catch (error) {
+                console.error("Error marking as important:", error);
+                alert("حدث خطأ أثناء تحديد الكلمة كمهمة");
+              }
+            }}
+            onMarkUnimportant={async () => {
+              try {
+                await markWordsAsUnimportantApi([reviewCard.wordData._id]);
+                dispatch(getLessonById(id));
+                setReviewCard((prev) => ({
+                  ...prev,
+                  wordData: { ...prev.wordData, isImportant: false },
+                }));
+              } catch (error) {
+                console.error("Error marking as unimportant:", error);
+                alert("حدث خطأ أثناء إزالة علامة الأهمية");
+              }
+            }}
+            isImportant={reviewCard.wordData?.isImportant}
           />
         )}
 

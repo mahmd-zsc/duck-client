@@ -10,7 +10,7 @@ const StatisticsSection = ({
   reviewedPercentage,
 }) => {
   return (
-    <div className="mb-8">
+    <div className="mb-8 relative">
       <div className="text-center mb-6">
         <div className="mb-3">
           <span className="text-6xl font-light text-gray-900">
@@ -25,7 +25,7 @@ const StatisticsSection = ({
             </div>
           )}
           {selectedWordsCount > 0 && (
-            <div className="mt-1 text-blue-600 font-medium">
+            <div className="mt-1 text-blue-600 font-medium absolute left-1/2 -translate-x-1/2">
               {selectedWordsCount} كلمة محددة
             </div>
           )}
